@@ -5,3 +5,30 @@
 For development, you will obviously want to test changes you made to the presets in JOSM. However, JOSM [doesn't support](https://josm.openstreetmap.de/ticket/8933) force-reloading presets. You are [supposed to](https://josm.openstreetmap.de/wiki/Presets#UpdatingAvailablepresetsinJOSM) manually delete the cache and then restart JOSM.
 
 Instead, I start a local web server and append a cache-buster parameter to the URL (e.g. `https://localhost:5500/out/id-presets.xml?cachebuster=1`). This way, I only need to increment the parameter in the preset settings whenever I want to reload (though note that this will pollute your cache folder quite a bit).
+
+### Snippets
+
+#### Finding all actually used `locationSet` values
+
+iD supports [very complex](https://github.com/ideditor/location-conflation) values for including or excluding regions. But are those actually used in practice?
+
+```js
+new Set(
+    [...Object.values(idPresets), ...Object.values(idFields)]
+        .map((p) => [...(p.locationSet?.exclude || []), ...(p.locationSet?.include || [])])
+        .flat()
+        .map((e) => e.toLowerCase()),
+);
+```
+
+### Resources
+
+For understanding the format of JOSM presets:
+
+* The [Tagging Presets docs](https://josm.openstreetmap.de/wiki/TaggingPresets) on the JOSM wiki cover most of the important stuff.
+* The [Customising JOSM Presets](https://wiki.openstreetmap.org/wiki/Customising_JOSM_Presets) page on the OSM wiki is incomplete but adds some useful context for some properties.
+* For more advanced stuff, you have to read the [XSD schema](https://josm.openstreetmap.de/browser/josm/trunk/resources/data/tagging-preset.xsd).
+
+Prior art:
+
+* https://github.com/simonpoole/preset-utils/blob/master/src/main/java/ch/poole/osm/presetutils/ID2JOSM.java

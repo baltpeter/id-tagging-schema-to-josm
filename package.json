@@ -3,6 +3,7 @@
     "type": "module",
     "dependencies": {
         "@openstreetmap/id-tagging-schema": "^6.17.0",
+        "@rapideditor/country-coder": "^5.6.1",
         "globby": "^16.2.0",
         "xmlbuilder2": "^4.0.3"
     },

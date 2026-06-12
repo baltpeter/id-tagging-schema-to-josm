@@ -5,6 +5,7 @@ import { create } from 'xmlbuilder2';
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { idFieldTypeToJosmField } from './util/mapping.ts';
+import { iso1A2Code } from '@rapideditor/country-coder';
 
 const itsLicense = await readFile(
     join(import.meta.dirname, '../node_modules/@openstreetmap/id-tagging-schema/LICENSE.md'),
@@ -19,7 +20,7 @@ doc.com('\nThese presets are based on id-tagging-schema, which has the following
 // JOSM doesn't like slashes in `ref`s.
 const slugifyRef = (ref: string) => ref.replaceAll('/', '__');
 
-// Fields in curly braces resolve to those of the preset by that name.
+/** Fields in curly braces resolve to those of the preset by that name. */
 const resolveFields = (fields: string[] | undefined, fieldType: string): string[] =>
     fields
         ?.map((f) => {
@@ -27,6 +28,23 @@ const resolveFields = (fields: string[] | undefined, fieldType: string): string[
             return f;
         })
         .flat(Infinity) || [];
+
+// Turns out that this property is quite useless in JOSM compared to iD. It doesn't hide but only produces a validation
+// error when uploading (https://josm.openstreetmap.de/ticket/23290#comment:5).
+const convertLocationSet = (e: { locationSet?: { include?: string[]; exclude?: string[] } }) => {
+    // TODO: There is also `locationSetCrossReference` for importing the `locationSet` from another preset/field but
+    // that isn't currently used anywhere.
+    if (!e.locationSet || (!e.locationSet.include && !e.locationSet.exclude)) return undefined;
+
+    // While per the id-tagging-schema schema, you could technically specify both `exclude` and `include`, in practice
+    // this hasn't happened. And JOSM doesn't support that anyway. Since an allowlist is stricter, we prefer that.
+    const isExclude = !e.locationSet.include;
+    const regions = (isExclude ? e.locationSet.exclude! : e.locationSet.include!)
+        .map((r) => iso1A2Code(r))
+        .filter(Boolean);
+
+    if (regions.length) return { regions, exclude_regions: isExclude ? true : undefined };
+};
 
 const keyForField = (field: string) => idFields[field].key || idFields[field].keys[0];
 
@@ -63,6 +81,7 @@ for (const [id, f] of Object.entries(idFields)) {
         // TODO: Hack: Since we are currently not respecting f.geometry, specifying f.default for those is dangerous
         // (otherwise e.g. `building_area_yes`, which is present on lots of POIs sets `building=yes` even for nodes).
         default: f.geometry ? undefined : f.default,
+        ...convertLocationSet(f),
     });
     if (type === 'combo' || type === 'multiselect') {
         // TODO: What to do if `f.options` is `undefined`?
@@ -79,8 +98,7 @@ for (const [id, f] of Object.entries(idFields)) {
     // TODO: f.prerequisiteTag
     // TODO: f.pattern
     // TODO: f.urlFormat
-    // TODO: these feel impossible: snake_case, caseSensitive, allowDuplicates, minValue, maxValue, increment,
-    // locationSet
+    // TODO: these feel impossible: snake_case, caseSensitive, allowDuplicates, minValue, maxValue, increment
     // TODO: special field options: types, placeholders, labels
     // TODO: Translations can have placeholder.
 }
@@ -99,6 +117,7 @@ for (const [id, p] of Object.entries(idPresets)) {
         name: 'BenniD::' + name,
         // TODO: Actually set this based on `p.geometry`.
         type: 'node,way,closedway,multipolygon,relation',
+        ...convertLocationSet(p),
     });
 
     // This is annoying, but because JOSM doesn't deduplicate keys (which iD does), we have to do that ourselves.
@@ -139,7 +158,7 @@ for (const [id, p] of Object.entries(idPresets)) {
     // TODO: p.reference
     // TODO: p.relation
     // TODO: match based on p.tags, p.matchScore
-    // TODO: these feel impossible: p.removeTags, p.locationSet
+    // TODO: these feel impossible: p.removeTags
 }
 
 await writeFile(join(import.meta.dirname, '../out/id-presets.xml'), doc.end({ prettyPrint: true }));
