@@ -104,6 +104,8 @@ for (const [id, f] of Object.entries(idFields)) {
 }
 
 for (const [id, p] of Object.entries(idPresets)) {
+    if (id.startsWith('@templates/')) continue;
+
     // TODO: Handle p.name.
     const translation = idTranslationsEn.en.presets.presets[id];
     // According to the ideditor/schema-builder README, p.aliases and p.terms are also possible but those are never
