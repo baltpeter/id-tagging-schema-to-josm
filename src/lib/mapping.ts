@@ -33,3 +33,13 @@ export const idFieldTypeToJosmField = {
     wikidata: 'text',
     wikipedia: 'text',
 } as const;
+
+export const idGeometryToJosmType = {
+    point: 'node',
+    vertex: 'node',
+    line: 'way',
+    area: 'closedway',
+    relation: 'relation,multipolygon',
+};
+export const josmTypesFromIdGeometry = (geometry: (keyof typeof idGeometryToJosmType)[] | undefined) =>
+    geometry?.map((g) => idGeometryToJosmType[g].split(',')).flat();

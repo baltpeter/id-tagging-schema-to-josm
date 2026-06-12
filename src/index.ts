@@ -4,8 +4,9 @@ import idTranslationsEn from '@openstreetmap/id-tagging-schema/dist/translations
 import { create } from 'xmlbuilder2';
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { idFieldTypeToJosmField } from './util/mapping.ts';
+import { idFieldTypeToJosmField, josmTypesFromIdGeometry } from './lib/mapping.ts';
 import { iso1A2Code } from '@rapideditor/country-coder';
+import { arrayIntersect, arrayUnique, strArrArrUnique } from './lib/util.ts';
 
 const itsLicense = await readFile(
     join(import.meta.dirname, '../node_modules/@openstreetmap/id-tagging-schema/LICENSE.md'),
@@ -46,6 +47,12 @@ const convertLocationSet = (e: { locationSet?: { include?: string[]; exclude?: s
     if (regions.length) return { regions, exclude_regions: isExclude ? true : undefined };
 };
 
+const filterFields = (fields: string[], geometries: string[]) =>
+    fields.filter((f) => {
+        const fieldGeometries = josmTypesFromIdGeometry(idFields[f].geometry);
+        return !fieldGeometries || arrayIntersect(geometries, fieldGeometries).length > 0;
+    });
+
 const keyForField = (field: string) => idFields[field].key || idFields[field].keys[0];
 
 // TODO: Do we want to do something with these? Adding them to every preset seems overwhelming.
@@ -69,8 +76,6 @@ for (const [id, f] of Object.entries(idFields)) {
         continue;
     }
 
-    // TODO: Can we respect f.geometry?
-
     // TODO: This is not the full logic. We need to handle `f.label`.
     const text = idTranslationsEn.en.presets.fields[f.key]?.label || f.key;
 
@@ -78,9 +83,7 @@ for (const [id, f] of Object.entries(idFields)) {
         // TODO: I doubt it's possible to implement iD's handling of `keys`.
         key: f.key || f.keys[0],
         text,
-        // TODO: Hack: Since we are currently not respecting f.geometry, specifying f.default for those is dangerous
-        // (otherwise e.g. `building_area_yes`, which is present on lots of POIs sets `building=yes` even for nodes).
-        default: f.geometry ? undefined : f.default,
+        default: f.default,
         ...convertLocationSet(f),
     });
     if (type === 'combo' || type === 'multiselect') {
@@ -115,52 +118,74 @@ for (const [id, p] of Object.entries(idPresets)) {
           (translation.terms ? ` (${translation.terms.replaceAll(',', ', ')})` : '')
         : id;
 
-    const item = doc.ele('item', {
-        name: 'BenniD::' + name,
-        // TODO: Actually set this based on `p.geometry`.
-        type: 'node,way,closedway,multipolygon,relation',
-        ...convertLocationSet(p),
-    });
-
-    // This is annoying, but because JOSM doesn't deduplicate keys (which iD does), we have to do that ourselves.
-    // Because we start by adding the static keys, we _should_ be fine to deduplicate in insertion order.
-    const addedKeys = new Set<string>();
-
-    for (const [key, value] of Object.entries({ ...p.tags, ...p.addTags })) {
-        if (value !== '*') {
-            item.ele('key', { key, value });
-            addedKeys.add(key);
-        }
-    }
-
-    const addFields = (fields: string[], xmlBase: typeof item) => {
-        for (const field of fields) {
-            const key = keyForField(field);
-            if (addedKeys.has(key)) continue;
-
-            xmlBase.ele('reference', { ref: slugifyRef(field) });
-            addedKeys.add(key);
-        }
-    };
-
     const fields = resolveFields(p.fields, 'fields');
-    addFields(fields, item);
-
     const moreFields = resolveFields(p.moreFields, 'moreFields').filter((f) => !fields.includes(f));
-    if (moreFields.length > 0) {
-        const optional = item.ele('optional');
-        addFields(moreFields, optional);
+
+    // JOSM doesn't support restricting the geometry types on a per-field basis (only for presets), while iD needs that.
+    // Since this is quite important, we need to duplicate each preset that has geometry-type-restricted fields for each
+    // possible type combination.
+    const presetGeometries = arrayUnique(josmTypesFromIdGeometry(p.geometry));
+    const legalFieldGeometryCombinations = strArrArrUnique(
+        [...fields, ...moreFields]
+            .map((f) => arrayUnique(josmTypesFromIdGeometry(idFields[f].geometry)).sort())
+            .map((c) => arrayIntersect(c, presetGeometries))
+            .filter((c) => c.length > 0),
+    );
+    const geometryCombinations: string[][] = [];
+    let remainingPresetGeometries = presetGeometries.slice();
+    for (const c of legalFieldGeometryCombinations) {
+        geometryCombinations.push(c);
+        remainingPresetGeometries = remainingPresetGeometries.filter((g) => !c.includes(g));
     }
+    if (remainingPresetGeometries.length > 0) geometryCombinations.push(remainingPresetGeometries);
 
-    // TODO: If fields or moreFields are not defined, the values of the preset's "parent" preset are used. For example, shop/convenience automatically uses the same fields as shop.
-    // TODO: In both explicit and implicit inheritance, fields for keys that define the preset via tags are generally not inherited, even when specified by the parent explicitly. E.g. the shop field is not inherited by shop/… presets. This can be overwritten by adding the field explicitly like "fields": [ "shop", "{shop}" ],
+    for (const geometries of geometryCombinations) {
+        const item = doc.ele('item', {
+            name: 'BenniD::' + name,
+            type: geometries.join(','),
+            ...convertLocationSet(p),
+        });
 
-    // TODO: p.icon, p.imageURL?
-    // TODO: p.replacement
-    // TODO: p.reference
-    // TODO: p.relation
-    // TODO: match based on p.tags, p.matchScore
-    // TODO: these feel impossible: p.removeTags
+        // This is annoying, but because JOSM doesn't deduplicate keys (which iD does), we have to do that ourselves.
+        // Because we start by adding the static keys, we _should_ be fine to deduplicate in insertion order.
+        const addedKeys = new Set<string>();
+
+        for (const [key, value] of Object.entries({ ...p.tags, ...p.addTags })) {
+            if (value !== '*') {
+                item.ele('key', { key, value });
+                addedKeys.add(key);
+            }
+        }
+
+        const addFields = (fields: string[], xmlBase: typeof item) => {
+            for (const field of fields) {
+                const key = keyForField(field);
+                if (addedKeys.has(key)) continue;
+
+                xmlBase.ele('reference', { ref: slugifyRef(field) });
+                addedKeys.add(key);
+            }
+        };
+
+        const geometryFilteredFields = filterFields(fields, geometries);
+        const geometryFilteredMoreFields = filterFields(moreFields, geometries);
+
+        addFields(geometryFilteredFields, item);
+        if (geometryFilteredMoreFields.length > 0) {
+            const optional = item.ele('optional');
+            addFields(geometryFilteredMoreFields, optional);
+        }
+
+        // TODO: If fields or moreFields are not defined, the values of the preset's "parent" preset are used. For example, shop/convenience automatically uses the same fields as shop.
+        // TODO: In both explicit and implicit inheritance, fields for keys that define the preset via tags are generally not inherited, even when specified by the parent explicitly. E.g. the shop field is not inherited by shop/… presets. This can be overwritten by adding the field explicitly like "fields": [ "shop", "{shop}" ],
+
+        // TODO: p.icon, p.imageURL?
+        // TODO: p.replacement
+        // TODO: p.reference
+        // TODO: p.relation
+        // TODO: match based on p.tags, p.matchScore
+        // TODO: these feel impossible: p.removeTags
+    }
 }
 
 await writeFile(join(import.meta.dirname, '../out/id-presets.xml'), doc.end({ prettyPrint: true }));
