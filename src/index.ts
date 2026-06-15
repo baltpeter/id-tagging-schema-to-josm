@@ -80,7 +80,7 @@ for (const [id, f] of Object.entries(idFields)) {
     }
 
     // TODO: This is not the full logic. We need to handle `f.label`.
-    const text = idTranslationsEn.en.presets.fields[key]?.label || key;
+    const text = idTranslationsEn.fields[key]?.label || key;
 
     const input = chunk.ele(type, {
         // TODO: I doubt it's possible to implement iD's handling of `keys`.
@@ -91,9 +91,19 @@ for (const [id, f] of Object.entries(idFields)) {
     });
     if (type === 'combo' || type === 'multiselect') {
         for (const option of f.options || []) {
-            // TODO: f.strings, f.stringsCrossReference
+            const translation =
+                idTranslationsEn.fields[
+                    (f.stringsCrossReference ? f.stringsCrossReference.slice(1, -1) : key).replaceAll(':', '/')
+                ]?.options?.[option];
+
+            const title = typeof translation === 'string' ? translation : translation?.title;
+
             // TODO: f.icons, f.iconsCrossReference
-            input.ele('list_entry', { value: option });
+            input.ele('list_entry', {
+                value: option,
+                display_value: title ? `${title} (${option})` : undefined,
+                short_description: typeof translation !== 'string' ? translation?.description : undefined,
+            });
         }
 
         if (f.autoSuggestions !== false) {
@@ -113,7 +123,7 @@ for (const [id, p] of Object.entries(idPresets)) {
     if (id.startsWith('@templates/')) continue;
 
     // TODO: Handle p.name.
-    const translation = idTranslationsEn.en.presets.presets[id];
+    const translation = idTranslationsEn.presets[id];
     // According to the ideditor/schema-builder README, p.aliases and p.terms are also possible but those are never
     // actually used.
     const name = translation

@@ -9,23 +9,19 @@ type EmptyObj = Record<PropertyKey, never>;
 
 const idPresets = _idPresets as Record<string, Omit<ItsPreset, 'name'>>;
 const idFields = _idFields as Record<string, Omit<ItsField, 'label'>>;
-const idTranslationsEn = _idTranslationsEn as {
-    en: {
-        presets: {
-            categories: Record<string, { name: string }>;
-            fields: Record<
-                string,
-                {
-                    label?: string;
-                    placeholder?: string;
-                    terms?: string;
-                    options?: Record<string, string | { title: string; description: string }>;
-                    [k: string]: string | NestedRecord | undefined;
-                }
-            >;
-            presets: Record<string, EmptyObj | { name: string; terms?: string; aliases?: string }>;
-        };
-    };
+const idTranslationsEn = _idTranslationsEn.en.presets as {
+    categories: Record<string, { name: string }>;
+    fields: Record<
+        string,
+        {
+            label?: string;
+            placeholder?: string;
+            terms?: string;
+            options?: Record<string, string | { title: string; description: string }>;
+            [k: string]: string | NestedRecord | undefined;
+        }
+    >;
+    presets: Record<string, EmptyObj | { name: string; terms?: string; aliases?: string }>;
 };
 
 export { idPresets, idFields, idTranslationsEn };
