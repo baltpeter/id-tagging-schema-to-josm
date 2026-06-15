@@ -1,5 +1,14 @@
 ## Development
 
+### Setup
+
+You'll need to download a dump of the [`taginfo-master` database](https://taginfo.openstreetmap.org/download) to `data/taginfo.db`:
+
+```sh
+wget -O /tmp/taginfo-master.db.bz2 https://taginfo.openstreetmap.org/download/taginfo-master.db.bz2
+bzcat /tmp/taginfo-master.db.bz2 > data/taginfo.db
+```
+
 ### Reloading the presets in JOSM
 
 For development, you will obviously want to test changes you made to the presets in JOSM. However, JOSM [doesn't support](https://josm.openstreetmap.de/ticket/8933) force-reloading presets. You are [supposed to](https://josm.openstreetmap.de/wiki/Presets#UpdatingAvailablepresetsinJOSM) manually delete the cache and then restart JOSM.

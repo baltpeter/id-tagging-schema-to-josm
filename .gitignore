@@ -1,4 +1,6 @@
 out/
+data/*
+!data/.keep
 
 *.tmp
 tmp.*

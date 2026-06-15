@@ -1,10 +1,10 @@
 import { create } from 'xmlbuilder2';
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { idFieldTypeToJosmField, josmTypesFromIdGeometry } from './lib/its.ts';
+import { idFieldTypeToJosmField, josmTypesFromIdGeometry, idFields, idPresets, idTranslationsEn } from './lib/its.ts';
 import { iso1A2Code } from '@rapideditor/country-coder';
 import { arrayIntersect, arrayUnique, strArrArrUnique } from './lib/util.ts';
-import { idFields, idPresets, idTranslationsEn } from './lib/its.ts';
+import { taginfoSuggestions } from './lib/taginfo.ts';
 
 const itsLicense = await readFile(
     join(import.meta.dirname, '../node_modules/@openstreetmap/id-tagging-schema/LICENSE.md'),
@@ -90,21 +90,21 @@ for (const [id, f] of Object.entries(idFields)) {
         ...convertLocationSet(f),
     });
     if (type === 'combo' || type === 'multiselect') {
-        // TODO: What to do if `f.options` is `undefined`?
         for (const option of f.options || []) {
             // TODO: f.strings, f.stringsCrossReference
             // TODO: f.icons, f.iconsCrossReference
-            input.ele('list_entry', { value: option }).up();
+            input.ele('list_entry', { value: option });
+        }
+
+        if (f.autoSuggestions !== false) {
+            const suggestions = taginfoSuggestions(key).filter((s) => !f.options?.includes(s));
+            for (const option of suggestions || []) input.ele('list_entry', { value: option });
         }
     }
     // TODO: f.options for checkbox
 
-    // TODO: f.autoSuggestions
-    // TODO: f.customValues
-    // TODO: f.prerequisiteTag
-    // TODO: f.pattern
-    // TODO: f.urlFormat
-    // TODO: these feel impossible: snake_case, caseSensitive, allowDuplicates, minValue, maxValue, increment
+    // TODO: these feel impossible: snake_case, caseSensitive, allowDuplicates, minValue, maxValue, increment,
+    // customValues, pattern, urlFormat
     // TODO: special field options: types, placeholders, labels
     // TODO: Translations can have placeholder.
 }
@@ -144,6 +144,7 @@ for (const [id, p] of Object.entries(idPresets)) {
 
     for (const geometries of geometryCombinations) {
         const item = doc.ele('item', {
+            // TODO: Remove prefix (just for testing to distinguish the presets).
             name: 'BenniD::' + name,
             type: geometries.join(','),
             ...convertLocationSet(p),
