@@ -1,6 +1,7 @@
 out/
 data/*
 !data/.keep
+icons/
 
 *.tmp
 tmp.*

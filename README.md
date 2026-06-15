@@ -9,6 +9,12 @@ wget -O /tmp/taginfo-master.db.bz2 https://taginfo.openstreetmap.org/download/ta
 bzcat /tmp/taginfo-master.db.bz2 > data/taginfo.db
 ```
 
+### Usage
+
+To compile the icons, run `yarn compile-icons`.
+
+Finally, run `yarn build` to build the presets, which will be written to the `out` folder.
+
 ### Reloading the presets in JOSM
 
 For development, you will obviously want to test changes you made to the presets in JOSM. However, JOSM [doesn't support](https://josm.openstreetmap.de/ticket/8933) force-reloading presets. You are [supposed to](https://josm.openstreetmap.de/wiki/Presets#UpdatingAvailablepresetsinJOSM) manually delete the cache and then restart JOSM.

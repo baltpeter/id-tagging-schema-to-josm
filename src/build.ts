@@ -75,7 +75,7 @@ for (const [id, f] of Object.entries(idFields)) {
             ? idFieldTypeToJosmField[f.type as keyof typeof idFieldTypeToJosmField]
             : undefined;
     if (!type) {
-        chunk.ele('label', { text: 'Unsupported field: ' + key });
+        chunk.ele('label', { text: 'Unsupported field: ' + key, icon: 'fas-triangle-exclamation' });
         continue;
     }
 
@@ -103,6 +103,9 @@ for (const [id, f] of Object.entries(idFields)) {
                 value: option,
                 display_value: title ? `${title} (${option})` : undefined,
                 short_description: typeof translation !== 'string' ? translation?.description : undefined,
+                icon: f.iconsCrossReference
+                    ? idFields[f.iconsCrossReference.slice(1, -1)]?.icons?.[option]
+                    : f.icons?.[option],
             });
         }
 
@@ -157,6 +160,7 @@ for (const [id, p] of Object.entries(idPresets)) {
             // TODO: Remove prefix (just for testing to distinguish the presets).
             name: 'BenniD::' + name,
             type: geometries.join(','),
+            icon: p.icon,
             ...convertLocationSet(p),
         });
 
