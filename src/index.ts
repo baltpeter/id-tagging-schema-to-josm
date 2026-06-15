@@ -1,12 +1,10 @@
-import idPresets from '@openstreetmap/id-tagging-schema/dist/presets.json' with { type: 'json' };
-import idFields from '@openstreetmap/id-tagging-schema/dist/fields.json' with { type: 'json' };
-import idTranslationsEn from '@openstreetmap/id-tagging-schema/dist/translations/en.json' with { type: 'json' };
 import { create } from 'xmlbuilder2';
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { idFieldTypeToJosmField, josmTypesFromIdGeometry } from './lib/mapping.ts';
+import { idFieldTypeToJosmField, josmTypesFromIdGeometry } from './lib/its.ts';
 import { iso1A2Code } from '@rapideditor/country-coder';
 import { arrayIntersect, arrayUnique, strArrArrUnique } from './lib/util.ts';
+import { idFields, idPresets, idTranslationsEn } from './lib/its.ts';
 
 const itsLicense = await readFile(
     join(import.meta.dirname, '../node_modules/@openstreetmap/id-tagging-schema/LICENSE.md'),
@@ -22,13 +20,14 @@ doc.com('\nThese presets are based on id-tagging-schema, which has the following
 const slugifyRef = (ref: string) => ref.replaceAll('/', '__');
 
 /** Fields in curly braces resolve to those of the preset by that name. */
-const resolveFields = (fields: string[] | undefined, fieldType: string): string[] =>
+const resolveFields = (fields: string[] | undefined, fieldType: 'fields' | 'moreFields'): string[] =>
     fields
         ?.map((f) => {
             if (f.startsWith('{')) return resolveFields(idPresets[f.slice(1, -1)][fieldType], fieldType);
             return f;
         })
-        .flat(Infinity) || [];
+        // https://stackoverflow.com/a/61420611
+        .flat(Infinity as 20) || [];
 
 // Turns out that this property is quite useless in JOSM compared to iD. It doesn't hide but only produces a validation
 // error when uploading (https://josm.openstreetmap.de/ticket/23290#comment:5).
@@ -53,7 +52,8 @@ const filterFields = (fields: string[], geometries: string[]) =>
         return !fieldGeometries || arrayIntersect(geometries, fieldGeometries).length > 0;
     });
 
-const keyForField = (field: string) => idFields[field].key || idFields[field].keys[0];
+// TODO: Handle `type: restrictions`.
+const keyForField = (field: string) => idFields[field].key || idFields[field].keys?.[0];
 
 // TODO: Do we want to do something with these? Adding them to every preset seems overwhelming.
 const universalFields = Object.entries(idFields)
@@ -62,6 +62,9 @@ const universalFields = Object.entries(idFields)
 
 for (const [id, f] of Object.entries(idFields)) {
     const chunk = doc.ele('chunk', { id: slugifyRef(id) });
+
+    const key = f.key || f.keys?.[0];
+    if (!key) continue;
 
     // TODO: special handling for: localized?, colour?, textarea, date?, typeCombo, defaultCheck, onewayCheck, radio?,
     // wikidata?, wikipedia?
@@ -72,16 +75,16 @@ for (const [id, f] of Object.entries(idFields)) {
             ? idFieldTypeToJosmField[f.type as keyof typeof idFieldTypeToJosmField]
             : undefined;
     if (!type) {
-        chunk.ele('label', { text: 'Unsupported field: ' + f.key || f.keys[0] });
+        chunk.ele('label', { text: 'Unsupported field: ' + key });
         continue;
     }
 
     // TODO: This is not the full logic. We need to handle `f.label`.
-    const text = idTranslationsEn.en.presets.fields[f.key]?.label || f.key;
+    const text = idTranslationsEn.en.presets.fields[key]?.label || key;
 
     const input = chunk.ele(type, {
         // TODO: I doubt it's possible to implement iD's handling of `keys`.
-        key: f.key || f.keys[0],
+        key,
         text,
         default: f.default,
         ...convertLocationSet(f),
@@ -160,6 +163,7 @@ for (const [id, p] of Object.entries(idPresets)) {
         const addFields = (fields: string[], xmlBase: typeof item) => {
             for (const field of fields) {
                 const key = keyForField(field);
+                if (!key) continue;
                 if (addedKeys.has(key)) continue;
 
                 xmlBase.ele('reference', { ref: slugifyRef(field) });
