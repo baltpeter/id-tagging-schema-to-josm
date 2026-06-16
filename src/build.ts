@@ -181,6 +181,11 @@ for (const [id, p] of Object.entries(idPresets)) {
                 icon: 'warning-small',
             });
 
+        if (p.reference)
+            item.ele('link', {
+                wiki: 'Tag:' + p.reference.key + (p.reference.value ? '=' + p.reference.value : ''),
+            });
+
         // This is annoying, but because JOSM doesn't deduplicate keys (which iD does), we have to do that ourselves.
         // Because we start by adding the static keys, we _should_ be fine to deduplicate in insertion order.
         const addedKeys = new Set<string>();
@@ -215,7 +220,6 @@ for (const [id, p] of Object.entries(idPresets)) {
         // TODO: If fields or moreFields are not defined, the values of the preset's "parent" preset are used. For example, shop/convenience automatically uses the same fields as shop.
         // TODO: In both explicit and implicit inheritance, fields for keys that define the preset via tags are generally not inherited, even when specified by the parent explicitly. E.g. the shop field is not inherited by shop/… presets. This can be overwritten by adding the field explicitly like "fields": [ "shop", "{shop}" ],
 
-        // TODO: p.reference
         // TODO: p.relation
         // TODO: match based on p.tags, p.matchScore
         // TODO: these feel impossible: p.removeTags
