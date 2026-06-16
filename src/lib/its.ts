@@ -3,12 +3,13 @@ import _idFields from '@openstreetmap/id-tagging-schema/dist/fields.json' with {
 import _idTranslationsEn from '@openstreetmap/id-tagging-schema/dist/translations/en.json' with { type: 'json' };
 import { type ItsField } from './its-types/ItsField.ts';
 import { type ItsPreset } from './its-types/ItsPreset.ts';
+import type { SetOptional } from 'type-fest';
 
 type NestedRecord = { [k: string]: string | NestedRecord };
 type EmptyObj = Record<PropertyKey, never>;
 
 const idPresets = _idPresets as Record<string, Omit<ItsPreset, 'name'>>;
-const idFields = _idFields as Record<string, Omit<ItsField, 'label'>>;
+const idFields = _idFields as Record<string, SetOptional<ItsField, 'label'>>;
 const idTranslationsEn = _idTranslationsEn.en.presets as {
     categories: Record<string, { name: string }>;
     fields: Record<

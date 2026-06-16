@@ -3,7 +3,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { idFieldTypeToJosmField, josmTypesFromIdGeometry, idFields, idPresets, idTranslationsEn } from './lib/its.ts';
 import { iso1A2Code } from '@rapideditor/country-coder';
-import { arrayIntersect, arrayUnique, strArrArrUnique } from './lib/util.ts';
+import { arrayIntersect, arrayUnique, strArrArrUnique, unenclose } from './lib/util.ts';
 import { taginfoSuggestions } from './lib/taginfo.ts';
 import JSZip from 'jszip';
 
@@ -23,7 +23,7 @@ const slugifyRef = (ref: string) => ref.replaceAll('/', '__');
 const resolveFields = (fields: string[] | undefined, fieldType: 'fields' | 'moreFields'): string[] =>
     fields
         ?.map((f) => {
-            if (f.startsWith('{')) return resolveFields(idPresets[f.slice(1, -1)][fieldType], fieldType);
+            if (f.startsWith('{')) return resolveFields(idPresets[unenclose(f)][fieldType], fieldType);
             return f;
         })
         // https://stackoverflow.com/a/61420611
@@ -82,8 +82,8 @@ for (const [id, f] of Object.entries(idFields)) {
         continue;
     }
 
-    // TODO: This is not the full logic. We need to handle `f.label`.
-    const text = idTranslationsEn.fields[key]?.label || key;
+    const translationKey = f.label ? unenclose(f.label) : key;
+    const text = idTranslationsEn.fields[translationKey]?.label || key;
 
     const input = chunk.ele(type, {
         // TODO: I doubt it's possible to implement iD's handling of `keys`.
@@ -96,13 +96,13 @@ for (const [id, f] of Object.entries(idFields)) {
         for (const option of f.options || []) {
             const translation =
                 idTranslationsEn.fields[
-                    (f.stringsCrossReference ? f.stringsCrossReference.slice(1, -1) : key).replaceAll(':', '/')
+                    (f.stringsCrossReference ? unenclose(f.stringsCrossReference) : key).replaceAll(':', '/')
                 ]?.options?.[option];
 
             const title = typeof translation === 'string' ? translation : translation?.title;
 
             const icon = f.iconsCrossReference
-                ? idFields[f.iconsCrossReference.slice(1, -1)]?.icons?.[option]
+                ? idFields[unenclose(f.iconsCrossReference)]?.icons?.[option]
                 : f.icons?.[option];
             input.ele('list_entry', {
                 value: option,
@@ -122,8 +122,13 @@ for (const [id, f] of Object.entries(idFields)) {
 
     // TODO: these feel impossible: snake_case, caseSensitive, allowDuplicates, minValue, maxValue, increment,
     // customValues, pattern, urlFormat
-    // TODO: special field options: types, placeholders, labels
-    // TODO: Translations can have placeholder.
+
+    // TODO:
+    // > Some special fields define additional strings besides options:
+    // >
+    // > access fields define types for the different traffic modes
+    // > directionalCombo fields define types for the respecive directions subtags
+    // > address fields define placeholders and labels for the individual address sub-fields
 }
 
 for (const [id, p] of Object.entries(idPresets)) {

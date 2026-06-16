@@ -1,3 +1,11 @@
+## Limitations
+
+Presets in iD have a lot more features than presets in JOSM. This project tries to map the iD presets as well as possible, but some aspects are just impossible to implement in a JOSM preset.
+
+As a result, the JOSM presets we have the following limitations compared to the original iD presets:
+
+- We ignore the following properties of fields because they have no equivalent in JOSM: `placeholder`, `terms`
+
 ## Development
 
 ### Setup
