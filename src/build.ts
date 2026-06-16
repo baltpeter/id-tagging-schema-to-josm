@@ -5,16 +5,16 @@ import { idFieldTypeToJosmField, josmTypesFromIdGeometry, idFields, idPresets, i
 import { iso1A2Code } from '@rapideditor/country-coder';
 import { arrayIntersect, arrayUnique, strArrArrUnique } from './lib/util.ts';
 import { taginfoSuggestions } from './lib/taginfo.ts';
+import JSZip from 'jszip';
 
-const itsLicense = await readFile(
-    join(import.meta.dirname, '../node_modules/@openstreetmap/id-tagging-schema/LICENSE.md'),
-    'utf-8',
-);
+const itsLicense =
+    '\nThese presets are based on id-tagging-schema, which has the following license terms:\n\n' +
+    (await readFile(join(import.meta.dirname, '../node_modules/@openstreetmap/id-tagging-schema/LICENSE.md'), 'utf-8'));
 
 const doc = create({ version: '1.0', encoding: 'utf-8' }).ele('presets', {
     xmlns: 'http://josm.openstreetmap.de/tagging-preset-1.0',
 });
-doc.com('\nThese presets are based on id-tagging-schema, which has the following license terms:\n\n' + itsLicense);
+doc.com(itsLicense);
 
 // JOSM doesn't like slashes in `ref`s.
 const slugifyRef = (ref: string) => ref.replaceAll('/', '__');
@@ -60,6 +60,8 @@ const universalFields = Object.entries(idFields)
     .filter(([, f]) => f.universal)
     .map(([id]) => id);
 
+const iconsUsed = new Set<string>();
+
 for (const [id, f] of Object.entries(idFields)) {
     const chunk = doc.ele('chunk', { id: slugifyRef(id) });
 
@@ -76,6 +78,7 @@ for (const [id, f] of Object.entries(idFields)) {
             : undefined;
     if (!type) {
         chunk.ele('label', { text: 'Unsupported field: ' + key, icon: 'fas-triangle-exclamation' });
+        iconsUsed.add('fas-triangle-exclamation');
         continue;
     }
 
@@ -98,15 +101,16 @@ for (const [id, f] of Object.entries(idFields)) {
 
             const title = typeof translation === 'string' ? translation : translation?.title;
 
-            // TODO: f.icons, f.iconsCrossReference
+            const icon = f.iconsCrossReference
+                ? idFields[f.iconsCrossReference.slice(1, -1)]?.icons?.[option]
+                : f.icons?.[option];
             input.ele('list_entry', {
                 value: option,
                 display_value: title ? `${title} (${option})` : undefined,
                 short_description: typeof translation !== 'string' ? translation?.description : undefined,
-                icon: f.iconsCrossReference
-                    ? idFields[f.iconsCrossReference.slice(1, -1)]?.icons?.[option]
-                    : f.icons?.[option],
+                icon,
             });
+            if (icon) iconsUsed.add(icon);
         }
 
         if (f.autoSuggestions !== false) {
@@ -163,6 +167,7 @@ for (const [id, p] of Object.entries(idPresets)) {
             icon: p.icon,
             ...convertLocationSet(p),
         });
+        if (p.icon) iconsUsed.add(p.icon);
 
         // This is annoying, but because JOSM doesn't deduplicate keys (which iD does), we have to do that ourselves.
         // Because we start by adding the static keys, we _should_ be fine to deduplicate in insertion order.
@@ -198,7 +203,6 @@ for (const [id, p] of Object.entries(idPresets)) {
         // TODO: If fields or moreFields are not defined, the values of the preset's "parent" preset are used. For example, shop/convenience automatically uses the same fields as shop.
         // TODO: In both explicit and implicit inheritance, fields for keys that define the preset via tags are generally not inherited, even when specified by the parent explicitly. E.g. the shop field is not inherited by shop/… presets. This can be overwritten by adding the field explicitly like "fields": [ "shop", "{shop}" ],
 
-        // TODO: p.icon, p.imageURL?
         // TODO: p.replacement
         // TODO: p.reference
         // TODO: p.relation
@@ -207,4 +211,24 @@ for (const [id, p] of Object.entries(idPresets)) {
     }
 }
 
-await writeFile(join(import.meta.dirname, '../out/id-presets.xml'), doc.end({ prettyPrint: true }));
+const xml = doc.end({ prettyPrint: true });
+await writeFile(join(import.meta.dirname, '../out/id-presets.xml'), xml);
+
+const iconsDir = join(import.meta.dirname, '../icons');
+const fullLicense = itsLicense + '\n\n' + (await readFile(join(iconsDir, 'LICENSE'), 'utf-8'));
+for (const style of ['light', 'dark']) {
+    const zip = new JSZip();
+    zip.file('id-presets.xml', xml);
+    zip.file('LICENSE', fullLicense.trim());
+
+    for (const icon of iconsUsed) {
+        const iconBytes = await readFile(join(iconsDir, style, icon + '.svg')).catch(() => undefined);
+        if (iconBytes) zip.file(icon + '.svg', iconBytes);
+        else console.error('Missing icon:', style, icon);
+    }
+
+    await writeFile(
+        join(import.meta.dirname, '../out', `id-presets-${style}.zip`),
+        await zip.generateAsync({ type: 'nodebuffer' }),
+    );
+}
