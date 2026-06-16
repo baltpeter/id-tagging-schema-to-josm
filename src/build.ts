@@ -131,9 +131,7 @@ for (const [id, f] of Object.entries(idFields)) {
     // > address fields define placeholders and labels for the individual address sub-fields
 }
 
-for (const [id, p] of Object.entries(idPresets)) {
-    if (id.startsWith('@templates/')) continue;
-
+const getNameForPreset = (id: string) => {
     // TODO: Handle p.name.
     const translation = idTranslationsEn.presets[id];
     // According to the ideditor/schema-builder README, p.aliases and p.terms are also possible but those are never
@@ -142,6 +140,15 @@ for (const [id, p] of Object.entries(idPresets)) {
         ? [translation.name, ...(translation.aliases?.split('\n') || [])].join(' / ') +
           (translation.terms ? ` (${translation.terms.replaceAll(',', ', ')})` : '')
         : id;
+
+    // TODO: Remove prefix (just for testing to distinguish the presets).
+    return 'BenniD::' + name;
+};
+
+for (const [id, p] of Object.entries(idPresets)) {
+    if (id.startsWith('@templates/')) continue;
+
+    const name = getNameForPreset(id);
 
     const fields = resolveFields(p.fields, 'fields');
     const moreFields = resolveFields(p.moreFields, 'moreFields').filter((f) => !fields.includes(f));
@@ -166,8 +173,7 @@ for (const [id, p] of Object.entries(idPresets)) {
 
     for (const geometries of geometryCombinations) {
         const item = doc.ele('item', {
-            // TODO: Remove prefix (just for testing to distinguish the presets).
-            name: 'BenniD::' + name,
+            name,
             type: geometries.join(','),
             icon: p.icon,
             ...convertLocationSet(p),
@@ -175,10 +181,9 @@ for (const [id, p] of Object.entries(idPresets)) {
         if (p.icon) iconsUsed.add(p.icon);
 
         if (p.replacement)
-            item.ele('label', {
-                text: 'Warning: Deprecated preset! You should use the following preset instead: ' + p.replacement,
-                // This is a built-in icon.
-                icon: 'warning-small',
+            item.ele('preset_link', {
+                preset_name: getNameForPreset(p.replacement),
+                text: 'Warning: Deprecated preset! Recommended alternative: ' + p.replacement,
             });
 
         if (p.reference)
