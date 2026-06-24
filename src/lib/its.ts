@@ -9,7 +9,7 @@ import type { SetOptional } from 'type-fest';
 type NestedRecord = { [k: string]: string | NestedRecord };
 type EmptyObj = Record<PropertyKey, never>;
 
-export const idPresets = _idPresets as Record<string, Omit<ItsPreset, 'name'>>;
+export const idPresets = _idPresets as Record<string, SetOptional<ItsPreset, 'name'>>;
 export const idFields = _idFields as Record<string, SetOptional<ItsField, 'label'>>;
 export const idTranslationsEn = _idTranslationsEn.en.presets as {
     categories: Record<string, { name: string }>;

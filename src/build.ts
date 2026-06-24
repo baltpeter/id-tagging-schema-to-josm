@@ -154,8 +154,8 @@ groups['uncategorized'] = doc.ele('group', {
 });
 
 const getNameForPreset = (id: string) => {
-    // TODO: Handle p.name.
-    const translation = idTranslationsEn.presets[id];
+    const translationId = idPresets[id].name ? unenclose(idPresets[id].name) : id;
+    const translation = idTranslationsEn.presets[translationId];
     // According to the ideditor/schema-builder README, p.aliases and p.terms are also possible but those are never
     // actually used.
     const name = translation
