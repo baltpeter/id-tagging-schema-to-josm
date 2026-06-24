@@ -1,11 +1,19 @@
 import { create } from 'xmlbuilder2';
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { idFieldTypeToJosmField, josmTypesFromIdGeometry, idFields, idPresets, idTranslationsEn } from './lib/its.ts';
+import {
+    idFieldTypeToJosmField,
+    josmTypesFromIdGeometry,
+    idFields,
+    idPresets,
+    idTranslationsEn,
+    idCategories,
+} from './lib/its.ts';
 import { iso1A2Code } from '@rapideditor/country-coder';
 import { arrayIntersect, arrayUnique, strArrArrUnique, unenclose } from './lib/util.ts';
 import { taginfoSuggestions } from './lib/taginfo.ts';
 import JSZip from 'jszip';
+import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces.js';
 
 const itsLicense =
     '\nThese presets are based on id-tagging-schema, which has the following license terms:\n\n' +
@@ -131,6 +139,20 @@ for (const [id, f] of Object.entries(idFields)) {
     // > address fields define placeholders and labels for the individual address sub-fields
 }
 
+const groups: Record<string, XMLBuilder> = {};
+for (const [id, category] of Object.entries(idCategories)) {
+    groups[id] = doc.ele('group', {
+        name: 'iD: ' + idTranslationsEn.categories[id].name || id,
+        icon: category.icon,
+    });
+    if (category.icon) iconsUsed.add(category.icon);
+}
+groups['uncategorized'] = doc.ele('group', {
+    name: 'iD: Uncategorized',
+    // This is a built-in icon.
+    icon: 'session',
+});
+
 const getNameForPreset = (id: string) => {
     // TODO: Handle p.name.
     const translation = idTranslationsEn.presets[id];
@@ -141,8 +163,7 @@ const getNameForPreset = (id: string) => {
           (translation.terms ? ` (${translation.terms.replaceAll(',', ', ')})` : '')
         : id;
 
-    // TODO: Remove prefix (just for testing to distinguish the presets).
-    return 'BenniD::' + name;
+    return name;
 };
 
 for (const [id, p] of Object.entries(idPresets)) {
@@ -172,7 +193,10 @@ for (const [id, p] of Object.entries(idPresets)) {
     if (remainingPresetGeometries.length > 0) geometryCombinations.push(remainingPresetGeometries);
 
     for (const geometries of geometryCombinations) {
-        const item = doc.ele('item', {
+        const groupId = Object.entries(idCategories).find(([_, c]) => c.members.includes(id))?.[0] || 'uncategorized';
+        const group = groups[groupId];
+
+        const item = (group || doc).ele('item', {
             name,
             type: geometries.join(','),
             icon: p.icon,

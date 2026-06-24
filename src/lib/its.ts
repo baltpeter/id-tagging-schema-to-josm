@@ -1,5 +1,6 @@
 import _idPresets from '@openstreetmap/id-tagging-schema/dist/presets.json' with { type: 'json' };
 import _idFields from '@openstreetmap/id-tagging-schema/dist/fields.json' with { type: 'json' };
+import idCategories from '@openstreetmap/id-tagging-schema/dist/preset_categories.json' with { type: 'json' };
 import _idTranslationsEn from '@openstreetmap/id-tagging-schema/dist/translations/en.json' with { type: 'json' };
 import { type ItsField } from './its-types/ItsField.ts';
 import { type ItsPreset } from './its-types/ItsPreset.ts';
@@ -8,9 +9,9 @@ import type { SetOptional } from 'type-fest';
 type NestedRecord = { [k: string]: string | NestedRecord };
 type EmptyObj = Record<PropertyKey, never>;
 
-const idPresets = _idPresets as Record<string, Omit<ItsPreset, 'name'>>;
-const idFields = _idFields as Record<string, SetOptional<ItsField, 'label'>>;
-const idTranslationsEn = _idTranslationsEn.en.presets as {
+export const idPresets = _idPresets as Record<string, Omit<ItsPreset, 'name'>>;
+export const idFields = _idFields as Record<string, SetOptional<ItsField, 'label'>>;
+export const idTranslationsEn = _idTranslationsEn.en.presets as {
     categories: Record<string, { name: string }>;
     fields: Record<
         string,
@@ -25,7 +26,7 @@ const idTranslationsEn = _idTranslationsEn.en.presets as {
     presets: Record<string, EmptyObj | { name: string; terms?: string; aliases?: string }>;
 };
 
-export { idPresets, idFields, idTranslationsEn };
+export { idCategories };
 
 /**
  * As per: https://github.com/ideditor/schema-builder/tree/e86c4ee8c90455a8655c5735cddc9a8860731891#type
