@@ -61,7 +61,11 @@ for (const set of Object.values(iconSets)) {
 
     // Light mode icons.
     for (const icon of icons) {
-        await cp(icon, join(iconsDir, 'light', set.prefix + basename(icon)));
+        const raw = await readFile(icon, 'utf-8');
+        const outFile = join(iconsDir, 'light', set.prefix + basename(icon));
+
+        // JOSM doesn't appear to support `currentColor`
+        await writeFile(outFile, raw.replaceAll('"currentColor"', '"#000000"'));
     }
 
     // Dark mode icons.
