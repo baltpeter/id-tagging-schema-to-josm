@@ -200,6 +200,7 @@ for (const [id, p] of Object.entries(idPresets)) {
             name,
             type: geometries.join(','),
             icon: p.icon,
+            preset_name_label: true,
             ...convertLocationSet(p),
         });
         if (p.icon) iconsUsed.add(p.icon);
