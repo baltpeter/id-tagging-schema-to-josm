@@ -1,16 +1,17 @@
 import _idPresets from '@openstreetmap/id-tagging-schema/dist/presets.json' with { type: 'json' };
 import _idFields from '@openstreetmap/id-tagging-schema/dist/fields.json' with { type: 'json' };
-import idCategories from '@openstreetmap/id-tagging-schema/dist/preset_categories.json' with { type: 'json' };
+import _idCategories from '@openstreetmap/id-tagging-schema/dist/preset_categories.json' with { type: 'json' };
 import _idTranslationsEn from '@openstreetmap/id-tagging-schema/dist/translations/en.json' with { type: 'json' };
-import { type ItsField } from './its-types/ItsField.ts';
-import { type ItsPreset } from './its-types/ItsPreset.ts';
-import type { SetOptional } from 'type-fest';
+import type { Presets, Fields, PresetCategories } from '@openstreetmap/id-tagging-schema';
 
 type NestedRecord = { [k: string]: string | NestedRecord };
 type EmptyObj = Record<PropertyKey, never>;
 
-export const idPresets = _idPresets as Record<string, SetOptional<ItsPreset, 'name'>>;
-export const idFields = _idFields as Record<string, SetOptional<ItsField, 'label'>>;
+// The bundled types unfortunately don't import correctly, so this dance is needed.
+export const idPresets = _idPresets as unknown as Presets;
+export const idFields = _idFields as unknown as Fields;
+export const idCategories = _idCategories as unknown as PresetCategories;
+
 export const idTranslationsEn = _idTranslationsEn.en.presets as {
     categories: Record<string, { name: string }>;
     fields: Record<
@@ -18,15 +19,13 @@ export const idTranslationsEn = _idTranslationsEn.en.presets as {
         {
             label?: string;
             placeholder?: string;
-            terms?: string;
+            terms?: string[];
             options?: Record<string, string | { title: string; description: string }>;
-            [k: string]: string | NestedRecord | undefined;
+            [k: string]: string | string[] | NestedRecord | undefined;
         }
     >;
-    presets: Record<string, EmptyObj | { name: string; terms?: string; aliases?: string }>;
+    presets: Record<string, EmptyObj | { name: string; terms?: string[]; aliases?: string[] }>;
 };
-
-export { idCategories };
 
 /**
  * As per: https://github.com/ideditor/schema-builder/tree/e86c4ee8c90455a8655c5735cddc9a8860731891#type

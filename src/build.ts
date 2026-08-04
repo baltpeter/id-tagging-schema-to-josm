@@ -10,7 +10,7 @@ import {
     idCategories,
 } from './lib/its.ts';
 import { iso1A2Code } from '@rapideditor/country-coder';
-import { arrayIntersect, arrayUnique, strArrArrUnique, unenclose } from './lib/util.ts';
+import { arrayIntersect, arrayUnique, strArrArrUnique } from './lib/util.ts';
 import { taginfoSuggestions } from './lib/taginfo.ts';
 import JSZip from 'jszip';
 import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces.js';
@@ -26,16 +26,6 @@ doc.com(itsLicense);
 
 // JOSM doesn't like slashes in `ref`s.
 const slugifyRef = (ref: string) => ref.replaceAll('/', '__');
-
-/** Fields in curly braces resolve to those of the preset by that name. */
-const resolveFields = (fields: string[] | undefined, fieldType: 'fields' | 'moreFields'): string[] =>
-    fields
-        ?.map((f) => {
-            if (f.startsWith('{')) return resolveFields(idPresets[unenclose(f)][fieldType], fieldType);
-            return f;
-        })
-        // https://stackoverflow.com/a/61420611
-        .flat(Infinity as 20) || [];
 
 // Turns out that this property is quite useless in JOSM compared to iD. It doesn't hide but only produces a validation
 // error when uploading (https://josm.openstreetmap.de/ticket/23290#comment:5).
@@ -94,8 +84,7 @@ for (const [id, f] of Object.entries(idFields)) {
         continue;
     }
 
-    const translationKey = f.label ? unenclose(f.label) : key;
-    const text = idTranslationsEn.fields[translationKey]?.label || key;
+    const text = idTranslationsEn.fields[key]?.label || key;
 
     const input = chunk.ele(type, {
         // TODO: I doubt it's possible to implement iD's handling of `keys`.
@@ -106,16 +95,11 @@ for (const [id, f] of Object.entries(idFields)) {
     });
     if (type === 'combo' || type === 'multiselect') {
         for (const option of f.options || []) {
-            const translation =
-                idTranslationsEn.fields[
-                    (f.stringsCrossReference ? unenclose(f.stringsCrossReference) : key).replaceAll(':', '/')
-                ]?.options?.[option];
+            const translation = idTranslationsEn.fields[key.replaceAll(':', '/')]?.options?.[option];
 
             const title = typeof translation === 'string' ? translation : translation?.title;
 
-            const icon = f.iconsCrossReference
-                ? idFields[unenclose(f.iconsCrossReference)]?.icons?.[option]
-                : f.icons?.[option];
+            const icon = f.icons?.[option];
             input.ele('list_entry', {
                 value: option,
                 display_value: title ? `${title} (${option})` : undefined,
@@ -130,7 +114,7 @@ for (const [id, f] of Object.entries(idFields)) {
             for (const option of suggestions || []) input.ele('list_entry', { value: option });
         }
     }
-    // TODO: f.options for checkbox
+    // TODO: f.options for checkbox, prerequisiteTag
 
     // TODO: these feel impossible: snake_case, caseSensitive, allowDuplicates, minValue, maxValue, increment,
     // customValues, pattern, urlFormat
@@ -158,13 +142,12 @@ groups['uncategorized'] = doc.ele('group', {
 });
 
 const getNameForPreset = (id: string) => {
-    const translationId = idPresets[id].name ? unenclose(idPresets[id].name) : id;
-    const translation = idTranslationsEn.presets[translationId];
+    const translation = idTranslationsEn.presets[id];
     // According to the ideditor/schema-builder README, p.aliases and p.terms are also possible but those are never
     // actually used.
     const name = translation
-        ? [translation.name, ...(translation.aliases?.split('\n') || [])].join(' / ') +
-          (translation.terms ? ` (${translation.terms.replaceAll(',', ', ')})` : '')
+        ? [translation.name, ...(translation.aliases || [])].join(' / ') +
+          (translation.terms ? ` (${translation.terms.join(', ')})` : '')
         : id;
 
     return name;
@@ -175,8 +158,8 @@ for (const [id, p] of Object.entries(idPresets)) {
 
     const name = getNameForPreset(id);
 
-    const fields = resolveFields(p.fields, 'fields');
-    const moreFields = resolveFields(p.moreFields, 'moreFields').filter((f) => !fields.includes(f));
+    const fields = p.fields || [];
+    const moreFields = p.moreFields?.filter((f) => !fields?.includes(f)) || [];
 
     // JOSM doesn't support restricting the geometry types on a per-field basis (only for presets), while iD needs that.
     // Since this is quite important, we need to duplicate each preset that has geometry-type-restricted fields for each
@@ -250,9 +233,6 @@ for (const [id, p] of Object.entries(idPresets)) {
             const optional = item.ele('optional');
             addFields(geometryFilteredMoreFields, optional);
         }
-
-        // TODO: If fields or moreFields are not defined, the values of the preset's "parent" preset are used. For example, shop/convenience automatically uses the same fields as shop.
-        // TODO: In both explicit and implicit inheritance, fields for keys that define the preset via tags are generally not inherited, even when specified by the parent explicitly. E.g. the shop field is not inherited by shop/… presets. This can be overwritten by adding the field explicitly like "fields": [ "shop", "{shop}" ],
 
         // TODO: p.relation
         // TODO: match based on p.tags, p.matchScore

@@ -3,6 +3,8 @@
         "noEmit": true,
         "types": ["node"],
         "skipLibCheck": true,
+        // Required for the way ITS ships declaration files for its JSONs.
+        "allowArbitraryExtensions": true,
 
         "target": "esnext",
         "module": "nodenext",

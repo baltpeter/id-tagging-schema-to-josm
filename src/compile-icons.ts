@@ -36,6 +36,11 @@ const iconSets = {
         iconsGlob: 'node_modules/@fortawesome/fontawesome-free/svgs-full/brands/*.svg',
         license: 'node_modules/@fortawesome/fontawesome-free/LICENSE.txt',
     },
+    pinhead: {
+        prefix: 'pinhead-',
+        iconsGlob: 'node_modules/@waysidemapping/pinhead/dist/icons/*.svg',
+        license: 'node_modules/@waysidemapping/pinhead/LICENSE',
+    },
     id: {
         prefix: 'iD-',
         iconsGlob: [

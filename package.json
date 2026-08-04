@@ -7,13 +7,14 @@
     },
     "dependencies": {
         "@enzet/roentgen": "^0.16.0",
-        "@fortawesome/fontawesome-free": "^7.2.0",
+        "@fortawesome/fontawesome-free": "^7.3.1",
         "@mapbox/maki": "^8.2.0",
-        "@openstreetmap/id": "^2.41.1",
-        "@openstreetmap/id-tagging-schema": "^6.18.0",
+        "@openstreetmap/id": "^2.41.2",
+        "@openstreetmap/id-tagging-schema": "^7.0.1",
         "@rapideditor/country-coder": "^5.6.1",
         "@rapideditor/temaki": "^5.13.0",
         "@svgdotjs/svg.js": "^3.2.5",
+        "@waysidemapping/pinhead": "^15.25.0",
         "better-sqlite3": "^12.11.1",
         "globby": "^16.2.0",
         "jszip": "^3.10.1",
@@ -21,11 +22,9 @@
         "xmlbuilder2": "^4.0.3"
     },
     "devDependencies": {
-        "@ideditor/schema-builder": "^6.5.1",
         "@types/better-sqlite3": "^7.6.13",
         "@types/node": "^26.0.0",
         "@types/svgdom": "^0.1.2",
-        "quicktype": "^23.2.6",
         "type-fest": "^5.7.0",
         "typescript": "^6.0.3"
     }
