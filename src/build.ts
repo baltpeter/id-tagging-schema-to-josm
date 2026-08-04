@@ -68,7 +68,7 @@ for (const [id, f] of Object.entries(idFields)) {
 
     // TODO: special handling for: localized?, colour?, textarea, date?, typeCombo, defaultCheck, onewayCheck, radio?,
     // wikidata?, wikipedia?
-    // TODO: Needs to be implemented separately: manyCombo, networkCombo?, directionalCombo, structureRadio,
+    // TODO: Needs to be implemented separately: networkCombo?, directionalCombo, structureRadio,
     // access, restrictions
     const type =
         f.type in idFieldTypeToJosmField
@@ -80,7 +80,13 @@ for (const [id, f] of Object.entries(idFields)) {
             text: '',
         });
         continue;
-    } else if (f.type === 'multiCombo') {
+    } else if (['multiCombo', 'manyCombo'].includes(f.type)) {
+        const keyBuilder = (option: string) => {
+            if (f.type === 'multiCombo') return `${f.key}${option}`;
+
+            return option;
+        };
+
         chunk.ele('label', { text: text + ':' });
         const checkGroup = chunk.ele('checkgroup', { columns: 5 });
 
@@ -88,7 +94,7 @@ for (const [id, f] of Object.entries(idFields)) {
             const optionText = idTranslationsEn.fields[id]?.options?.[option] || option;
 
             checkGroup.ele('check', {
-                key: `${f.key}${option}`,
+                key: keyBuilder(option),
                 text: optionText,
             });
         }
@@ -96,11 +102,11 @@ for (const [id, f] of Object.entries(idFields)) {
         // Unfortunately, the only way JOSM can display (check group) those is a lot less efficient than iD (combo box).
         // This is made worse by the fact that we can't filter by country in JOSM. To not spam every preset with tons of
         // checkboxes, we limit the number of auto suggestions.
-        if (f.autoSuggestions !== false && (f.options?.length || 0) <= 30) {
+        if (f.type === 'multiCombo' && f.autoSuggestions !== false && (f.options?.length || 0) <= 30) {
             const suggestions = taginfoPrefixedKeySuggestions(key, f.caseSensitive || false)
                 .filter((s) => !f.options?.includes(s))
                 .slice(0, 30);
-            for (const option of suggestions || []) checkGroup.ele('check', { key: `${f.key}${option}`, text: option });
+            for (const option of suggestions || []) checkGroup.ele('check', { key: keyBuilder(option), text: option });
         }
 
         continue;
