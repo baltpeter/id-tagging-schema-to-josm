@@ -5,9 +5,13 @@ const taginfoDbPath = join(import.meta.dirname, '../../data/taginfo.db');
 const db = sqlite3(taginfoDbPath, { readonly: true });
 
 const suggestionsStmt = db.prepare<[string], string>(
-    `select value from suggestions where key=? and value is not null;`,
+    `select lower(value) from suggestions where key=? and value is not null;`,
 );
 suggestionsStmt.pluck(true);
+const suggestionsCaseSensitiveStmt = db.prepare<[string], string>(
+    `select value from suggestions where key=? and value is not null;`,
+);
+suggestionsCaseSensitiveStmt.pluck(true);
 /**
  * Get Taginfo value suggestions for the specified key.
  *
@@ -17,7 +21,8 @@ suggestionsStmt.pluck(true);
  *
  * The other alternative would be to download the full `taginfo-db` database, but that weighs a healthy 40 GB.
  */
-export const taginfoSuggestions = (key: string) => suggestionsStmt.all(key);
+export const taginfoSuggestions = (key: string, caseSensitive: boolean) =>
+    (caseSensitive ? suggestionsCaseSensitiveStmt : suggestionsStmt).all(key);
 
 const taginfoPrefixedKeySuggestionsStmt = db.prepare<[number, string], string>(
     `select distinct substr(lower(key), ?) from (select key from popular_keys union select key from project_unique_keys) where key like ?;`,

@@ -156,14 +156,16 @@ for (const [id, f] of Object.entries(idFields)) {
             }
 
             if (f.autoSuggestions !== false) {
-                const suggestions = taginfoSuggestions(key).filter((s) => !f.options?.includes(s));
+                const suggestions = taginfoSuggestions(key, f.caseSensitive || false).filter(
+                    (s) => !f.options?.includes(s),
+                );
                 for (const option of suggestions || []) input.ele('list_entry', { value: option });
             }
         }
     }
     // TODO: f.options for checkbox, prerequisiteTag
 
-    // TODO: these feel impossible: snake_case, caseSensitive, allowDuplicates, minValue, maxValue, increment,
+    // TODO: these feel impossible: snake_case, allowDuplicates, minValue, maxValue, increment,
     // customValues, pattern, urlFormat
 }
 
