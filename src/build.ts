@@ -40,8 +40,6 @@ const resolveFields = (fields: string[] | undefined, fieldType: 'fields' | 'more
 // Turns out that this property is quite useless in JOSM compared to iD. It doesn't hide but only produces a validation
 // error when uploading (https://josm.openstreetmap.de/ticket/23290#comment:5).
 const convertLocationSet = (e: { locationSet?: { include?: string[]; exclude?: string[] } }) => {
-    // TODO: There is also `locationSetCrossReference` for importing the `locationSet` from another preset/field but
-    // that isn't currently used anywhere.
     if (!e.locationSet || (!e.locationSet.include && !e.locationSet.exclude)) return undefined;
 
     // While per the id-tagging-schema schema, you could technically specify both `exclude` and `include`, in practice

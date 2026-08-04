@@ -5,6 +5,11 @@ Presets in iD have a lot more features than presets in JOSM. This project tries 
 As a result, the JOSM presets we have the following limitations compared to the original iD presets:
 
 - We ignore the following properties of fields because they have no equivalent in JOSM: `placeholder`, `terms`
+- Presets and fields in iD can use the `locationSet` property to only show them in or exclude them from certain regions. The corresponding `regions` and `exclude_regions` properties in JOSM are a lot less powerful. They don't hide the irrelevant presets/fields but only [produces a validation error](https://josm.openstreetmap.de/ticket/23290#comment:5) when uploading.
+
+The following features could be implemented here but haven't been yet:
+
+- We currently ignore the `locationSetCrossReference` property for importing the `locationSet` from another preset/field because that isn't currently actually used in the iD presets.
 
 ## Development
 
