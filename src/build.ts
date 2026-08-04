@@ -165,8 +165,7 @@ for (const [id, f] of Object.entries(idFields)) {
     }
     // TODO: f.options for checkbox, prerequisiteTag
 
-    // TODO: these feel impossible: snake_case, allowDuplicates, minValue, maxValue, increment,
-    // customValues, pattern, urlFormat
+    // TODO: these feel impossible: allowDuplicates, customValues
 }
 
 const groups: Record<string, XMLBuilder> = {};

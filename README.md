@@ -8,7 +8,7 @@ As a result, the JOSM presets have the following limitations compared to the ori
 - Radio buttons are implemented as combo boxes due to lack of JOSM support.
 - We can't implement all properties of fields and can only implement some of them partially:
     - We use `caseSensitive` only for the Taginfo suggestions. It's not possible to transform values users add into a combobox to lowercase. 
-    - We ignore the following properties of fields because they have no equivalent in JOSM: `placeholder`, `terms`
+    - We ignore the following properties of fields because they have no equivalent in JOSM: `placeholder`, `terms`, `snake_case`, `minValue`, `maxValue`, `pattern`, `urlFormat`, `increment` (`auto_increment` is not compatible; the buttons don't adjust the entered value but control what the value of the next object with this preset will be)
 - Presets and fields in iD can use the `locationSet` property to only show them in or exclude them from certain regions. The corresponding `regions` and `exclude_regions` properties in JOSM are a lot less powerful. They don't hide the irrelevant presets/fields but only [produces a validation error](https://josm.openstreetmap.de/ticket/23290#comment:5) when uploading.
 
 The following features could be implemented but are currently not:
