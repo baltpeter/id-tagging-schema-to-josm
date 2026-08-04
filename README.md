@@ -5,6 +5,7 @@ Presets in iD have a lot more features than presets in JOSM. This project tries 
 As a result, the JOSM presets have the following limitations compared to the original iD presets:
 
 - iD has various specialized field types that add format restrictions or input helpers. Implementing those in JOSM isn't possible, which is why the following field types are treated as simple text fields: `localized`, `colour`, `textarea`, `date`, `wikidata`, `wikipedia`, and the following field types are treated as simple check boxes: `defaultCheck`, `onewayCheck`.
+- JOSM doesn't have a proper equivalent of iD's `semiCombo` field type. The closest match is a `multiselect` (which we use), however the key difference is that users can't add their own values to those. To at least somewhat work around this, we replace the `multiselect` with a text field if we don't have any options to present anyway. This is also our workaround for `semiCombo`s with `allowDuplicates: true`.
 - Radio buttons are implemented as combo boxes due to lack of JOSM support.
 - We can't implement all properties of fields and can only implement some of them partially:
     - We use `caseSensitive` only for the Taginfo suggestions. It's not possible to transform values users add into a combobox to lowercase. 

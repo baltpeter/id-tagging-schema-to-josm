@@ -124,14 +124,17 @@ for (const [id, f] of Object.entries(idFields)) {
     for (const specificKey of keys) {
         const text = isKeyedCombo ? fieldTranslations.types?.[specificKey] || specificKey : fieldLabel;
 
-        const input = chunk.ele(type, {
+        const inputAttrs = {
             // TODO: I doubt it's possible to implement iD's handling of `keys`.
             key: specificKey,
             text,
             default: f.type === 'typeCombo' ? 'yes' : f.default,
             ...convertLocationSet(f),
-        });
+        };
+        const input = chunk.ele(type, inputAttrs);
         if (type === 'combo' || type === 'multiselect') {
+            let optionCount = f.options?.length || 0;
+
             for (const option of f.options || []) {
                 // iD hardcodes this
                 // (https://github.com/openstreetmap/iD/blob/5aba48bfdec68ef9f843ccdc1f65d77937ab1666/modules/ui/fields/access.js#L98-L103),
@@ -160,12 +163,22 @@ for (const [id, f] of Object.entries(idFields)) {
                     (s) => !f.options?.includes(s),
                 );
                 for (const option of suggestions || []) input.ele('list_entry', { value: option });
+
+                optionCount += suggestions.length;
+            }
+
+            // Hack: Since users can't add their own values to `multiselect`s, we replace it with a text field if we
+            // don't have any options to present.
+            // We also do this if the field is supposed to allow duplicates.
+            if (type === 'multiselect' && (optionCount === 0 || f.allowDuplicates)) {
+                input.remove();
+                chunk.ele('text', inputAttrs);
             }
         }
     }
     // TODO: f.options for checkbox, prerequisiteTag
 
-    // TODO: these feel impossible: allowDuplicates, customValues
+    // TODO: these feel impossible: customValues
 }
 
 const groups: Record<string, XMLBuilder> = {};
