@@ -129,6 +129,7 @@ for (const [id, f] of Object.entries(idFields)) {
             key: specificKey,
             text,
             default: f.type === 'typeCombo' ? 'yes' : f.default,
+            editable: f.customValues,
             ...convertLocationSet(f),
         };
         const input = chunk.ele(type, inputAttrs);
@@ -177,8 +178,6 @@ for (const [id, f] of Object.entries(idFields)) {
         }
     }
     // TODO: f.options for checkbox, prerequisiteTag
-
-    // TODO: these feel impossible: customValues
 }
 
 const groups: Record<string, XMLBuilder> = {};
