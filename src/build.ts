@@ -84,7 +84,7 @@ for (const [id, f] of Object.entries(idFields)) {
         continue;
     }
 
-    const text = idTranslationsEn.fields[key]?.label || key;
+    const text = idTranslationsEn.fields[id]?.label || id;
 
     const input = chunk.ele(type, {
         // TODO: I doubt it's possible to implement iD's handling of `keys`.
