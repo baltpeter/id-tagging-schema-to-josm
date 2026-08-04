@@ -64,12 +64,12 @@ for (const [id, f] of Object.entries(idFields)) {
     const key = f.key || f.keys?.[0];
     if (!key) continue;
 
-    const text = idTranslationsEn.fields[id]?.label || id;
+    const fieldTranslations = idTranslationsEn.fields[id];
+    const fieldLabel = fieldTranslations?.label || id;
 
     // TODO: special handling for: localized?, colour?, textarea, date?, typeCombo, defaultCheck, onewayCheck, radio?,
     // wikidata?, wikipedia?
-    // TODO: Needs to be implemented separately: networkCombo?, directionalCombo, structureRadio,
-    // access, restrictions
+    // TODO: Needs to be implemented separately: networkCombo?, structureRadio, access, restrictions
     const type =
         f.type in idFieldTypeToJosmField
             ? idFieldTypeToJosmField[f.type as keyof typeof idFieldTypeToJosmField]
@@ -87,11 +87,11 @@ for (const [id, f] of Object.entries(idFields)) {
             return option;
         };
 
-        chunk.ele('label', { text: text + ':' });
+        chunk.ele('label', { text: fieldLabel });
         const checkGroup = chunk.ele('checkgroup', { columns: 5 });
 
         for (const option of f.options || []) {
-            const optionText = idTranslationsEn.fields[id]?.options?.[option] || option;
+            const optionText = fieldTranslations?.options?.[option] || option;
 
             checkGroup.ele('check', {
                 key: keyBuilder(option),
@@ -116,32 +116,41 @@ for (const [id, f] of Object.entries(idFields)) {
         continue;
     }
 
-    const input = chunk.ele(type, {
-        // TODO: I doubt it's possible to implement iD's handling of `keys`.
-        key,
-        text,
-        default: f.default,
-        ...convertLocationSet(f),
-    });
-    if (type === 'combo' || type === 'multiselect') {
-        for (const option of f.options || []) {
-            const translation = idTranslationsEn.fields[key.replaceAll(':', '/')]?.options?.[option];
+    if (f.type === 'directionalCombo') chunk.ele('label', { text: fieldLabel });
 
-            const title = typeof translation === 'string' ? translation : translation?.title;
+    const keys = f.type === 'directionalCombo' && f.keys ? f.keys : [key];
 
-            const icon = f.icons?.[option];
-            input.ele('list_entry', {
-                value: option,
-                display_value: title ? `${title} (${option})` : undefined,
-                short_description: typeof translation !== 'string' ? translation?.description : undefined,
-                icon,
-            });
-            if (icon) iconsUsed.add(icon);
-        }
+    // In almost all cases, we have exactly one key and `specificKey = key`. The loop is only needed for `type: directionalCombo`.
+    for (const specificKey of keys) {
+        const text = f.type === 'directionalCombo' ? fieldTranslations.types?.[specificKey] || specificKey : fieldLabel;
 
-        if (f.autoSuggestions !== false) {
-            const suggestions = taginfoSuggestions(key).filter((s) => !f.options?.includes(s));
-            for (const option of suggestions || []) input.ele('list_entry', { value: option });
+        const input = chunk.ele(type, {
+            // TODO: I doubt it's possible to implement iD's handling of `keys`.
+            key: specificKey,
+            text,
+            default: f.default,
+            ...convertLocationSet(f),
+        });
+        if (type === 'combo' || type === 'multiselect') {
+            for (const option of f.options || []) {
+                const translation = fieldTranslations?.options?.[option];
+
+                const title = typeof translation === 'string' ? translation : translation?.title;
+
+                const icon = f.icons?.[option];
+                input.ele('list_entry', {
+                    value: option,
+                    display_value: title ? `${title} (${option})` : undefined,
+                    short_description: typeof translation !== 'string' ? translation?.description : undefined,
+                    icon,
+                });
+                if (icon) iconsUsed.add(icon);
+            }
+
+            if (f.autoSuggestions !== false) {
+                const suggestions = taginfoSuggestions(key).filter((s) => !f.options?.includes(s));
+                for (const option of suggestions || []) input.ele('list_entry', { value: option });
+            }
         }
     }
     // TODO: f.options for checkbox, prerequisiteTag
@@ -153,7 +162,6 @@ for (const [id, f] of Object.entries(idFields)) {
     // > Some special fields define additional strings besides options:
     // >
     // > access fields define types for the different traffic modes
-    // > directionalCombo fields define types for the respecive directions subtags
     // > address fields define placeholders and labels for the individual address sub-fields
 }
 

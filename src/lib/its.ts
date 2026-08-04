@@ -21,6 +21,7 @@ export const idTranslationsEn = _idTranslationsEn.en.presets as {
             placeholder?: string;
             terms?: string[];
             options?: Record<string, string | { title: string; description: string }>;
+            types?: Record<string, string>;
             [k: string]: string | string[] | NestedRecord | undefined;
         }
     >;
@@ -49,6 +50,8 @@ export const idFieldTypeToJosmField = {
     combo: 'combo',
     typeCombo: 'combo',
     semiCombo: 'multiselect',
+    // This needs additional handling.
+    directionalCombo: 'combo',
 
     check: 'check',
     defaultCheck: 'check',
