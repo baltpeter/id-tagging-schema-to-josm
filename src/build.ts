@@ -69,7 +69,7 @@ for (const [id, f] of Object.entries(idFields)) {
 
     // TODO: special handling for: localized?, colour?, textarea, date?, typeCombo, defaultCheck, onewayCheck, radio?,
     // wikidata?, wikipedia?
-    // TODO: Needs to be implemented separately: networkCombo?, structureRadio, restrictions
+    // TODO: Needs to be implemented separately: structureRadio, restrictions
     const type =
         f.type in idFieldTypeToJosmField
             ? idFieldTypeToJosmField[f.type as keyof typeof idFieldTypeToJosmField]

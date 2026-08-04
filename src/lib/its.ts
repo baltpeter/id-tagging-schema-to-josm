@@ -49,6 +49,8 @@ export const idFieldTypeToJosmField = {
 
     combo: 'combo',
     typeCombo: 'combo',
+    // This should filter the values based on the location, which we can't do in JOSM.
+    networkCombo: 'combo',
     semiCombo: 'multiselect',
     // This needs additional handling.
     directionalCombo: 'combo',
