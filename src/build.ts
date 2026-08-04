@@ -48,7 +48,8 @@ const filterFields = (fields: string[], geometries: string[]) =>
         return !fieldGeometries || arrayIntersect(geometries, fieldGeometries).length > 0;
     });
 
-// TODO: Handle `type: restrictions`.
+// This assumes that each field has at least one key, which isn't the case for `type: restrictions`, but that isn't
+// currently used anywhere.
 const keyForField = (field: string) => idFields[field].key || idFields[field].keys?.[0];
 
 // TODO: Do we want to do something with these? Adding them to every preset seems overwhelming.
@@ -67,9 +68,6 @@ for (const [id, f] of Object.entries(idFields)) {
     const fieldTranslations = idTranslationsEn.fields[id];
     const fieldLabel = fieldTranslations?.label || id;
 
-    // TODO: special handling for: localized?, colour?, textarea, date?, defaultCheck, onewayCheck, radio?,
-    // wikidata?, wikipedia?
-    // TODO: Needs to be implemented separately: structureRadio, restrictions
     const type =
         f.type in idFieldTypeToJosmField
             ? idFieldTypeToJosmField[f.type as keyof typeof idFieldTypeToJosmField]

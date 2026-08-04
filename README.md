@@ -2,10 +2,18 @@
 
 Presets in iD have a lot more features than presets in JOSM. This project tries to map the iD presets as well as possible, but some aspects are just impossible to implement in a JOSM preset.
 
-As a result, the JOSM presets we have the following limitations compared to the original iD presets:
+As a result, the JOSM presets have the following limitations compared to the original iD presets:
 
 - We ignore the following properties of fields because they have no equivalent in JOSM: `placeholder`, `terms`
+- iD has various specialized field types that add format restrictions or input helpers. Implementing those in JOSM isn't possible, which is why the following field types are treated as simple text fields: `localized`, `colour`, `textarea`, `date`, `wikidata`, `wikipedia`, and the following field types are treated as simple check boxes: `defaultCheck`, `onewayCheck`.
+- Radio buttons are implemented as combo boxes due to lack of JOSM support.
 - Presets and fields in iD can use the `locationSet` property to only show them in or exclude them from certain regions. The corresponding `regions` and `exclude_regions` properties in JOSM are a lot less powerful. They don't hide the irrelevant presets/fields but only [produces a validation error](https://josm.openstreetmap.de/ticket/23290#comment:5) when uploading.
+
+The following features could be implemented but are currently not:
+
+- Field types
+    - `structureRadio`: This needs quite a bit of logic that isn't documented anywhere but only hardcoded in iD.
+    - `restrictions`: This isn't actually used in any preset. Based on the [documentation](https://github.com/openstreetmap/id-tagging-schema/blob/e0e844562573fc4ed0644972f4a635e20f5862c4/SCHEMA.md#special), it sounds like it would also need special UI, but it isn't clear what that should look like.
 
 ## Development
 
