@@ -69,7 +69,7 @@ for (const [id, f] of Object.entries(idFields)) {
 
     // TODO: special handling for: localized?, colour?, textarea, date?, typeCombo, defaultCheck, onewayCheck, radio?,
     // wikidata?, wikipedia?
-    // TODO: Needs to be implemented separately: networkCombo?, structureRadio, access, restrictions
+    // TODO: Needs to be implemented separately: networkCombo?, structureRadio, restrictions
     const type =
         f.type in idFieldTypeToJosmField
             ? idFieldTypeToJosmField[f.type as keyof typeof idFieldTypeToJosmField]
@@ -116,13 +116,15 @@ for (const [id, f] of Object.entries(idFields)) {
         continue;
     }
 
-    if (f.type === 'directionalCombo') chunk.ele('label', { text: fieldLabel });
+    const isKeyedCombo = ['directionalCombo', 'access'].includes(f.type);
 
-    const keys = f.type === 'directionalCombo' && f.keys ? f.keys : [key];
+    if (isKeyedCombo) chunk.ele('label', { text: fieldLabel });
 
-    // In almost all cases, we have exactly one key and `specificKey = key`. The loop is only needed for `type: directionalCombo`.
+    const keys = isKeyedCombo && f.keys ? f.keys : [key];
+
+    // In almost all cases, we have exactly one key and `specificKey = key`. The loop is only needed for `isKeyedCombo: true`.
     for (const specificKey of keys) {
-        const text = f.type === 'directionalCombo' ? fieldTranslations.types?.[specificKey] || specificKey : fieldLabel;
+        const text = isKeyedCombo ? fieldTranslations.types?.[specificKey] || specificKey : fieldLabel;
 
         const input = chunk.ele(type, {
             // TODO: I doubt it's possible to implement iD's handling of `keys`.
@@ -133,6 +135,14 @@ for (const [id, f] of Object.entries(idFields)) {
         });
         if (type === 'combo' || type === 'multiselect') {
             for (const option of f.options || []) {
+                // iD hardcodes this
+                // (https://github.com/openstreetmap/iD/blob/5aba48bfdec68ef9f843ccdc1f65d77937ab1666/modules/ui/fields/access.js#L98-L103),
+                // so I guess we will, too…
+                if (f.type === 'access') {
+                    if (specificKey !== 'bicycle' && option === 'dismount') continue;
+                    if (specificKey === 'access' && ['yes', 'designated'].includes(option)) continue;
+                }
+
                 const translation = fieldTranslations?.options?.[option];
 
                 const title = typeof translation === 'string' ? translation : translation?.title;
@@ -157,12 +167,6 @@ for (const [id, f] of Object.entries(idFields)) {
 
     // TODO: these feel impossible: snake_case, caseSensitive, allowDuplicates, minValue, maxValue, increment,
     // customValues, pattern, urlFormat
-
-    // TODO:
-    // > Some special fields define additional strings besides options:
-    // >
-    // > access fields define types for the different traffic modes
-    // > address fields define placeholders and labels for the individual address sub-fields
 }
 
 const groups: Record<string, XMLBuilder> = {};

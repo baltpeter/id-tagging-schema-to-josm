@@ -60,6 +60,9 @@ export const idFieldTypeToJosmField = {
     // Best we can do since JOSM doesn't have radio buttons.
     radio: 'combo',
 
+    // This needs additional handling.
+    access: 'combo',
+
     roadspeed: 'text',
     roadheight: 'text',
     wikidata: 'text',
