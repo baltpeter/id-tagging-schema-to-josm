@@ -77,12 +77,18 @@ for (const [id, f] of Object.entries(idFields)) {
     // TODO: special handling for: localized?, colour?, textarea, date?, typeCombo, defaultCheck, onewayCheck, radio?,
     // wikidata?, wikipedia?
     // TODO: Needs to be implemented separately: multiCombo, manyCombo, networkCombo?, directionalCombo, structureRadio,
-    // access, address, restrictions
+    // access, restrictions
     const type =
         f.type in idFieldTypeToJosmField
             ? idFieldTypeToJosmField[f.type as keyof typeof idFieldTypeToJosmField]
             : undefined;
-    if (!type) {
+    if (f.type === 'address') {
+        chunk.ele('preset_link', {
+            preset_name: 'Address',
+            text: '',
+        });
+        continue;
+    } else if (!type) {
         // This is a built-in icon.
         chunk.ele('label', { text: 'Unsupported field: ' + key, icon: 'misc/error' });
         continue;
