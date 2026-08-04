@@ -11,7 +11,7 @@ import {
 } from './lib/its.ts';
 import { iso1A2Code } from '@rapideditor/country-coder';
 import { arrayIntersect, arrayUnique, strArrArrUnique } from './lib/util.ts';
-import { taginfoSuggestions } from './lib/taginfo.ts';
+import { taginfoPrefixedKeySuggestions, taginfoSuggestions } from './lib/taginfo.ts';
 import JSZip from 'jszip';
 import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces.js';
 
@@ -64,9 +64,11 @@ for (const [id, f] of Object.entries(idFields)) {
     const key = f.key || f.keys?.[0];
     if (!key) continue;
 
+    const text = idTranslationsEn.fields[id]?.label || id;
+
     // TODO: special handling for: localized?, colour?, textarea, date?, typeCombo, defaultCheck, onewayCheck, radio?,
     // wikidata?, wikipedia?
-    // TODO: Needs to be implemented separately: multiCombo, manyCombo, networkCombo?, directionalCombo, structureRadio,
+    // TODO: Needs to be implemented separately: manyCombo, networkCombo?, directionalCombo, structureRadio,
     // access, restrictions
     const type =
         f.type in idFieldTypeToJosmField
@@ -78,13 +80,35 @@ for (const [id, f] of Object.entries(idFields)) {
             text: '',
         });
         continue;
+    } else if (f.type === 'multiCombo') {
+        chunk.ele('label', { text: text + ':' });
+        const checkGroup = chunk.ele('checkgroup', { columns: 5 });
+
+        for (const option of f.options || []) {
+            const optionText = idTranslationsEn.fields[id]?.options?.[option] || option;
+
+            checkGroup.ele('check', {
+                key: `${f.key}${option}`,
+                text: optionText,
+            });
+        }
+
+        // Unfortunately, the only way JOSM can display (check group) those is a lot less efficient than iD (combo box).
+        // This is made worse by the fact that we can't filter by country in JOSM. To not spam every preset with tons of
+        // checkboxes, we limit the number of auto suggestions.
+        if (f.autoSuggestions !== false && (f.options?.length || 0) <= 30) {
+            const suggestions = taginfoPrefixedKeySuggestions(key, f.caseSensitive || false)
+                .filter((s) => !f.options?.includes(s))
+                .slice(0, 30);
+            for (const option of suggestions || []) checkGroup.ele('check', { key: `${f.key}${option}`, text: option });
+        }
+
+        continue;
     } else if (!type) {
         // This is a built-in icon.
         chunk.ele('label', { text: 'Unsupported field: ' + key, icon: 'misc/error' });
         continue;
     }
-
-    const text = idTranslationsEn.fields[id]?.label || id;
 
     const input = chunk.ele(type, {
         // TODO: I doubt it's possible to implement iD's handling of `keys`.
