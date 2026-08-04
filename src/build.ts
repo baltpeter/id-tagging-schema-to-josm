@@ -67,7 +67,7 @@ for (const [id, f] of Object.entries(idFields)) {
     const fieldTranslations = idTranslationsEn.fields[id];
     const fieldLabel = fieldTranslations?.label || id;
 
-    // TODO: special handling for: localized?, colour?, textarea, date?, typeCombo, defaultCheck, onewayCheck, radio?,
+    // TODO: special handling for: localized?, colour?, textarea, date?, defaultCheck, onewayCheck, radio?,
     // wikidata?, wikipedia?
     // TODO: Needs to be implemented separately: structureRadio, restrictions
     const type =
@@ -130,7 +130,7 @@ for (const [id, f] of Object.entries(idFields)) {
             // TODO: I doubt it's possible to implement iD's handling of `keys`.
             key: specificKey,
             text,
-            default: f.default,
+            default: f.type === 'typeCombo' ? 'yes' : f.default,
             ...convertLocationSet(f),
         });
         if (type === 'combo' || type === 'multiselect') {
