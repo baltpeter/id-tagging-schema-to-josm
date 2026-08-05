@@ -80,5 +80,6 @@ export const idGeometryToJosmType = {
     area: 'closedway',
     relation: 'relation,multipolygon',
 };
+export const allJosmTypes = ['node', 'way', 'closedway', 'relation', 'multipolygon'];
 export const josmTypesFromIdGeometry = (geometry: (keyof typeof idGeometryToJosmType)[] | undefined) =>
     geometry?.map((g) => idGeometryToJosmType[g].split(',')).flat();

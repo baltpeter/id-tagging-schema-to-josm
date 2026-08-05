@@ -8,6 +8,7 @@ import {
     idPresets,
     idTranslationsEn,
     idCategories,
+    allJosmTypes,
 } from './lib/its.ts';
 import { iso1A2Code } from '@rapideditor/country-coder';
 import { arrayIntersect, arrayUnique, strArrArrUnique } from './lib/util.ts';
@@ -51,11 +52,6 @@ const filterFields = (fields: string[], geometries: string[]) =>
 // This assumes that each field has at least one key, which isn't the case for `type: restrictions`, but that isn't
 // currently used anywhere.
 const keyForField = (field: string) => idFields[field].key || idFields[field].keys?.[0];
-
-// TODO: Do we want to do something with these? Adding them to every preset seems overwhelming.
-const universalFields = Object.entries(idFields)
-    .filter(([, f]) => f.universal)
-    .map(([id]) => id);
 
 const iconsUsed = new Set<string>();
 
@@ -199,6 +195,21 @@ groups['uncategorized'] = doc.ele('group', {
     icon: 'session',
 });
 
+// Universal fields apply to all presets. In order not to clutter every preset with them, we have one "Universal fields"
+// preset that we link in the actual ones.
+const universalFields = Object.entries(idFields)
+    .filter(([, f]) => f.universal)
+    .map(([id]) => id);
+const universalFieldsItem = groups['uncategorized'].ele('item', {
+    name: 'Universal fields',
+    type: allJosmTypes.join(','),
+    // This is a built-in icon.
+    icon: 'help/internet',
+    preset_name_label: true,
+});
+universalFieldsItem.ele('label', { text: 'These fields apply to all presets.' });
+for (const ref of universalFields) universalFieldsItem.ele('reference', { ref: slugifyRef(ref) });
+
 const getNameForPreset = (id: string) => {
     const translation = idTranslationsEn.presets[id];
     // According to the ideditor/schema-builder README, p.aliases and p.terms are also possible but those are never
@@ -301,6 +312,8 @@ for (const [id, p] of Object.entries(idPresets)) {
             const optional = item.ele('optional');
             addFields(geometryFilteredMoreFields, optional);
         }
+
+        item.ele('preset_link', { preset_name: 'Universal fields' });
     }
 }
 
