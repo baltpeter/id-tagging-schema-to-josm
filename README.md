@@ -11,6 +11,9 @@ As a result, the JOSM presets have the following limitations compared to the ori
     - We use `caseSensitive` only for the Taginfo suggestions. It's not possible to transform values users add into a combobox to lowercase. 
     - We ignore the following properties of fields because they have no equivalent in JOSM: `placeholder`, `terms`, `snake_case`, `minValue`, `maxValue`, `pattern`, `urlFormat`, `increment` (`auto_increment` is not compatible; the buttons don't adjust the entered value but control what the value of the next object with this preset will be), `prerequisiteTag`
 - Presets and fields in iD can use the `locationSet` property to only show them in or exclude them from certain regions. The corresponding `regions` and `exclude_regions` properties in JOSM are a lot less powerful. They don't hide the irrelevant presets/fields but only [produces a validation error](https://josm.openstreetmap.de/ticket/23290#comment:5) when uploading.
+- Matching rules are only partially implemented:
+    - We ignore the `matchScore` as JOSM has no equivalent mechanism. It always shows all matching presets. It _might_ be possible to emulate this with a very complex `match_expression` that takes into account all other presets.
+    - Because JOSM and iD presets specify tag matching rules at different levels, we have to duplicate all field `<chunks>`. I tried replacing this with a `match_expression`, which would be a lot simpler but it looks like that can only exclude but not add matches.
 
 The following features could be implemented but are currently not:
 

@@ -60,7 +60,8 @@ const universalFields = Object.entries(idFields)
 const iconsUsed = new Set<string>();
 
 for (const [id, f] of Object.entries(idFields)) {
-    const chunk = doc.ele('chunk', { id: slugifyRef(id) });
+    const chunkId = slugifyRef(id);
+    const chunk = doc.ele('chunk', { id: chunkId });
 
     const key = f.key || f.keys?.[0];
     if (!key) continue;
@@ -177,6 +178,12 @@ for (const [id, f] of Object.entries(idFields)) {
             }
         }
     }
+
+    // (Painful) hack: iD specifies whether a field in a preset should match on the preset level, while JOSM does so on
+    // the field level. Thus, We need to have two versions of each field: a non-matching and a matching one.
+    const clone = doc.import(chunk).last();
+    clone.att('id', chunkId + '___matchKey');
+    clone.each((node) => node.att('match', 'key!'), false, false);
 }
 
 const groups: Record<string, XMLBuilder> = {};
@@ -212,6 +219,14 @@ for (const [id, p] of Object.entries(idPresets)) {
 
     const fields = p.fields || [];
     const moreFields = p.moreFields?.filter((f) => !fields?.includes(f)) || [];
+
+    // Collect the keys, for which any value should match the preset.
+    // iD additionally uses p.addTags to boost the matchScore
+    // (https://github.com/openstreetmap/iD/blob/b8543e41f6aa771c8d319fc47773020586536f74/modules/presets/preset.ts#L130-L136)
+    // but doesn't use them to determine whether a preset should match at all, so we should ignore it.
+    const matchKeys = Object.entries(p.tags)
+        .filter(([, v]) => v === '*')
+        .map(([k]) => k);
 
     // JOSM doesn't support restricting the geometry types on a per-field basis (only for presets), while iD needs that.
     // Since this is quite important, we need to duplicate each preset that has geometry-type-restricted fields for each
@@ -272,7 +287,9 @@ for (const [id, p] of Object.entries(idPresets)) {
                 if (!key) continue;
                 if (addedKeys.has(key)) continue;
 
-                xmlBase.ele('reference', { ref: slugifyRef(field) });
+                xmlBase.ele('reference', {
+                    ref: matchKeys.includes(key) ? slugifyRef(field) + '___matchKey' : slugifyRef(field),
+                });
                 addedKeys.add(key);
             }
         };
@@ -287,7 +304,6 @@ for (const [id, p] of Object.entries(idPresets)) {
         }
 
         // TODO: p.relation
-        // TODO: match based on p.tags, p.matchScore
         // TODO: these feel impossible: p.removeTags
     }
 }
