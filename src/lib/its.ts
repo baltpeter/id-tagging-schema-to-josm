@@ -1,8 +1,11 @@
 import _idPresets from '@openstreetmap/id-tagging-schema/dist/presets.json' with { type: 'json' };
 import _idFields from '@openstreetmap/id-tagging-schema/dist/fields.json' with { type: 'json' };
 import _idCategories from '@openstreetmap/id-tagging-schema/dist/preset_categories.json' with { type: 'json' };
-import _idTranslationsEn from '@openstreetmap/id-tagging-schema/dist/translations/en.json' with { type: 'json' };
+import idTranslationsEn from '@openstreetmap/id-tagging-schema/dist/translations/en.json' with { type: 'json' };
 import type { Presets, Fields, PresetCategories } from '@openstreetmap/id-tagging-schema';
+import { globby } from 'globby';
+import { basename, join } from 'node:path';
+import { readFile } from 'node:fs/promises';
 
 type NestedRecord = { [k: string]: string | NestedRecord };
 type EmptyObj = Record<PropertyKey, never>;
@@ -12,7 +15,7 @@ export const idPresets = _idPresets as unknown as Presets;
 export const idFields = _idFields as unknown as Fields;
 export const idCategories = _idCategories as unknown as PresetCategories;
 
-export const idTranslationsEn = _idTranslationsEn.en.presets as {
+export type Translation = {
     categories: Record<string, { name: string }>;
     fields: Record<
         string,
@@ -26,6 +29,23 @@ export const idTranslationsEn = _idTranslationsEn.en.presets as {
         }
     >;
     presets: Record<string, EmptyObj | { name: string; terms?: string[]; aliases?: string[] }>;
+};
+
+const idTranslationPaths = await globby(['*.json', '!*.min.json'], {
+    cwd: join(import.meta.dirname, '..', '..', 'node_modules/@openstreetmap/id-tagging-schema/dist/translations'),
+    absolute: true,
+});
+export const idTranslations: Record<string, Translation> = Object.fromEntries(
+    await Promise.all(
+        idTranslationPaths
+            .map((path) => ({ path, lang: basename(path, '.json') }))
+            .map(async ({ path, lang }) => [lang, JSON.parse(await readFile(path, 'utf-8'))[lang]?.presets]),
+    ),
+);
+export const translate = (lang: string, getter: (t: Translation) => string | undefined) => {
+    const translation = getter(idTranslations[lang]);
+    if (translation) return translation;
+    return getter(idTranslationsEn.en.presets);
 };
 
 /**

@@ -6,9 +6,10 @@ import {
     josmTypesFromIdGeometry,
     idFields,
     idPresets,
-    idTranslationsEn,
     idCategories,
     allJosmTypes,
+    translate,
+    type Translation,
 } from './lib/its.ts';
 import { iso1A2Code } from '@rapideditor/country-coder';
 import { arrayIntersect, arrayUnique, strArrArrUnique } from './lib/util.ts';
@@ -62,8 +63,9 @@ for (const [id, f] of Object.entries(idFields)) {
     const key = f.key || f.keys?.[0];
     if (!key) continue;
 
-    const fieldTranslations = idTranslationsEn.fields[id];
-    const fieldLabel = fieldTranslations?.label || id;
+    const fieldTranslation = (getter: (f: Translation['fields'][string] | undefined) => string | undefined) =>
+        translate('en', (t) => getter(t.fields[id]));
+    const fieldLabel = fieldTranslation((f) => f?.label) || id;
 
     const type =
         f.type in idFieldTypeToJosmField
@@ -86,7 +88,12 @@ for (const [id, f] of Object.entries(idFields)) {
         const checkGroup = chunk.ele('checkgroup', { columns: 5 });
 
         for (const option of f.options || []) {
-            const optionText = fieldTranslations?.options?.[option] || option;
+            const optionText =
+                fieldTranslation((f) => {
+                    const translation = f?.options?.[option];
+                    if (typeof translation === 'object' && 'title' in translation) return translation.title;
+                    return translation;
+                }) || option;
 
             checkGroup.ele('check', {
                 key: keyBuilder(option),
@@ -119,7 +126,7 @@ for (const [id, f] of Object.entries(idFields)) {
 
     // In almost all cases, we have exactly one key and `specificKey = key`. The loop is only needed for `isKeyedCombo: true`.
     for (const specificKey of keys) {
-        const text = isKeyedCombo ? fieldTranslations.types?.[specificKey] || specificKey : fieldLabel;
+        const text = isKeyedCombo ? fieldTranslation((f) => f?.types?.[specificKey]) || specificKey : fieldLabel;
 
         const inputAttrs = {
             key: specificKey,
@@ -141,15 +148,22 @@ for (const [id, f] of Object.entries(idFields)) {
                     if (specificKey === 'access' && ['yes', 'designated'].includes(option)) continue;
                 }
 
-                const translation = fieldTranslations?.options?.[option];
-
-                const title = typeof translation === 'string' ? translation : translation?.title;
+                const title = fieldTranslation((f) => {
+                    const translation = f?.options?.[option];
+                    if (typeof translation === 'object' && 'title' in translation) return translation.title;
+                    return translation;
+                });
+                const description = fieldTranslation((f) => {
+                    const translation = f?.options?.[option];
+                    if (typeof translation === 'object' && 'description' in translation) return translation.description;
+                    return undefined;
+                });
 
                 const icon = f.icons?.[option];
                 input.ele('list_entry', {
                     value: option,
                     display_value: title ? `${title} (${option})` : undefined,
-                    short_description: typeof translation !== 'string' ? translation?.description : undefined,
+                    short_description: description,
                     icon,
                 });
                 if (icon) iconsUsed.add(icon);
@@ -184,7 +198,7 @@ for (const [id, f] of Object.entries(idFields)) {
 const groups: Record<string, XMLBuilder> = {};
 for (const [id, category] of Object.entries(idCategories)) {
     groups[id] = doc.ele('group', {
-        name: 'iD: ' + idTranslationsEn.categories[id].name || id,
+        name: 'iD: ' + translate('en', (t) => t.categories[id].name) || id,
         icon: category.icon,
     });
     if (category.icon) iconsUsed.add(category.icon);
@@ -211,15 +225,15 @@ universalFieldsItem.ele('label', { text: 'These fields apply to all presets.' })
 for (const ref of universalFields) universalFieldsItem.ele('reference', { ref: slugifyRef(ref) });
 
 const getNameForPreset = (id: string) => {
-    const translation = idTranslationsEn.presets[id];
+    const name = translate('en', (t) =>
+        t.presets[id] ? [t.presets[id].name, ...(t.presets[id].aliases || [])].join(' / ') : undefined,
+    );
+    const terms = translate('en', (t) => t.presets[id].terms?.join(', '));
     // According to the ideditor/schema-builder README, p.aliases and p.terms are also possible but those are never
     // actually used.
-    const name = translation
-        ? [translation.name, ...(translation.aliases || [])].join(' / ') +
-          (translation.terms ? ` (${translation.terms.join(', ')})` : '')
-        : id;
+    const result = name ? name + (terms ? ` (${terms})` : '') : id;
 
-    return name;
+    return result;
 };
 
 for (const [id, p] of Object.entries(idPresets)) {
