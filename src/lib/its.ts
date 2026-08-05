@@ -42,7 +42,9 @@ export const idFieldTypeToJosmField = {
     email: 'text',
     url: 'text',
     identifier: 'text',
-    colour: 'text',
+    // JOSM has special handling for colors in combo fields:
+    // https://josm.openstreetmap.de/browser/josm/trunk/resources/data/tagging-preset.xsd?rev=19261#L398
+    colour: 'combo',
     schedule: 'text',
     textarea: 'text',
     date: 'text',
