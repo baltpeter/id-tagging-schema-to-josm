@@ -274,7 +274,7 @@ for (const [id, p] of Object.entries(idPresets)) {
         // Because we start by adding the static keys, we _should_ be fine to deduplicate in insertion order.
         const addedKeys = new Set<string>();
 
-        for (const [key, value] of Object.entries({ ...p.tags, ...p.addTags })) {
+        for (const [key, value] of Object.entries(p.addTags || p.tags)) {
             if (value !== '*') {
                 item.ele('key', { key, value });
                 addedKeys.add(key);
