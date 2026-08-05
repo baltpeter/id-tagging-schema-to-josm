@@ -9,7 +9,7 @@ As a result, the JOSM presets have the following limitations compared to the ori
 - Radio buttons are implemented as combo boxes due to lack of JOSM support.
 - We can't implement all properties of fields and can only implement some of them partially:
     - We use `caseSensitive` only for the Taginfo suggestions. It's not possible to transform values users add into a combobox to lowercase. 
-    - We ignore the following properties of fields because they have no equivalent in JOSM: `placeholder`, `terms`, `snake_case`, `minValue`, `maxValue`, `pattern`, `urlFormat`, `increment` (`auto_increment` is not compatible; the buttons don't adjust the entered value but control what the value of the next object with this preset will be)
+    - We ignore the following properties of fields because they have no equivalent in JOSM: `placeholder`, `terms`, `snake_case`, `minValue`, `maxValue`, `pattern`, `urlFormat`, `increment` (`auto_increment` is not compatible; the buttons don't adjust the entered value but control what the value of the next object with this preset will be), `prerequisiteTag`
 - Presets and fields in iD can use the `locationSet` property to only show them in or exclude them from certain regions. The corresponding `regions` and `exclude_regions` properties in JOSM are a lot less powerful. They don't hide the irrelevant presets/fields but only [produces a validation error](https://josm.openstreetmap.de/ticket/23290#comment:5) when uploading.
 
 The following features could be implemented but are currently not:
@@ -17,6 +17,7 @@ The following features could be implemented but are currently not:
 - Field types
     - `structureRadio`: This needs quite a bit of logic that isn't documented anywhere but only hardcoded in iD.
     - `restrictions`: This isn't actually used in any preset. Based on the [documentation](https://github.com/openstreetmap/id-tagging-schema/blob/e0e844562573fc4ed0644972f4a635e20f5862c4/SCHEMA.md#special), it sounds like it would also need special UI, but it isn't clear what that should look like.
+- We ignore the `options` property of checkboxes, which would explain what the checkbox values mean. While JOSM have a mechanism for that with checkboxes, we could replace checkboxes that have `options` specified with a combo field.
 
 ## Development
 

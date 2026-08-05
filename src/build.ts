@@ -177,7 +177,6 @@ for (const [id, f] of Object.entries(idFields)) {
             }
         }
     }
-    // TODO: f.options for checkbox, prerequisiteTag
 }
 
 const groups: Record<string, XMLBuilder> = {};
