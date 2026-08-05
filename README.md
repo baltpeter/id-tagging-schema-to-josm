@@ -4,6 +4,7 @@ Presets in iD have a lot more features than presets in JOSM. This project tries 
 
 As a result, the JOSM presets have the following limitations compared to the original iD presets:
 
+- One of the most useful features of the iD presets are the aliases and search terms, which make finding the correct preset easy. JOSM doesn't have a corresponding concept. To work around this, we add the aliases and terms to the preset name. This works for the search, but JOSM doesn't handle the (very) long preset names gracefully.
 - iD has various specialized field types that add format restrictions or input helpers. Implementing those in JOSM isn't possible, which is why the following field types are treated as simple text fields: `localized`, `textarea`, `date`, `wikidata`, `wikipedia`, and the following field types are treated as simple check boxes: `defaultCheck`, `onewayCheck`.
 - JOSM doesn't have a proper equivalent of iD's `semiCombo` field type. The closest match is a `multiselect` (which we use), however the key difference is that users can't add their own values to those. To at least somewhat work around this, we replace the `multiselect` with a text field if we don't have any options to present anyway. This is also our workaround for `semiCombo`s with `allowDuplicates: true`.
 - Radio buttons are implemented as combo boxes due to lack of JOSM support.
@@ -22,6 +23,8 @@ The following features could be implemented but are currently not:
     - `structureRadio`: This needs quite a bit of logic that isn't documented anywhere but only hardcoded in iD.
     - `restrictions`: This isn't actually used in any preset. Based on the [documentation](https://github.com/openstreetmap/id-tagging-schema/blob/e0e844562573fc4ed0644972f4a635e20f5862c4/SCHEMA.md#special), it sounds like it would also need special UI, but it isn't clear what that should look like.
 - We ignore the `options` property of checkboxes, which would explain what the checkbox values mean. While JOSM have a mechanism for that with checkboxes, we could replace checkboxes that have `options` specified with a combo field.
+- Fields in iD presets can specify more than one corresponding key, with [different behaviours based on field type](https://github.com/openstreetmap/id-tagging-schema/blob/e0e844562573fc4ed0644972f4a635e20f5862c4/SCHEMA.md#keykeys). We do implement some of these behaviours correctly, e.g. for `directionalCombo` and `access`. We however don't implement the [logic of which of the `keys` to set/edit based on the current tags](https://github.com/openstreetmap/id-tagging-schema/blob/e0e844562573fc4ed0644972f4a635e20f5862c4/SCHEMA.md#user-content-fn-1-b88261fcbbd4f3f0de38cadd5e5ad670), which would require us to duplicate the presets for each possible combinations are compute corresponding match expressions.
+- We are not yet handling the `relation` property of presets, which is currently only used by the `railway/yard` preset.
 
 ## Development
 

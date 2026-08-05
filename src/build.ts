@@ -126,7 +126,6 @@ for (const [id, f] of Object.entries(idFields)) {
         const text = isKeyedCombo ? fieldTranslations.types?.[specificKey] || specificKey : fieldLabel;
 
         const inputAttrs = {
-            // TODO: I doubt it's possible to implement iD's handling of `keys`.
             key: specificKey,
             text,
             default: f.type === 'typeCombo' ? 'yes' : f.default,
@@ -302,8 +301,6 @@ for (const [id, p] of Object.entries(idPresets)) {
             const optional = item.ele('optional');
             addFields(geometryFilteredMoreFields, optional);
         }
-
-        // TODO: p.relation
     }
 }
 
