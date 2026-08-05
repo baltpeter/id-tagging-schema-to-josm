@@ -36,15 +36,26 @@ const idTranslationPaths = await globby(['*.json', '!*.min.json'], {
     absolute: true,
 });
 export const idTranslations: Record<string, Translation> = Object.fromEntries(
-    await Promise.all(
-        idTranslationPaths
-            .map((path) => ({ path, lang: basename(path, '.json') }))
-            .map(async ({ path, lang }) => [lang, JSON.parse(await readFile(path, 'utf-8'))[lang]?.presets]),
-    ),
+    (
+        await Promise.all(
+            idTranslationPaths
+                .map((path) => ({ lang: basename(path, '.json'), path }))
+                .map(async ({ lang, path }) => ({ lang, json: await readFile(path, 'utf-8') })),
+        )
+    )
+        // Rough mechanism to only include reasonably translations. For reference, the English translation currently has
+        // length 786_267.
+        .filter(({ json }) => json.length > 500_000)
+        .map(({ lang, json }) => [lang, JSON.parse(json)[lang]?.presets]),
 );
 export const translate = (lang: string, getter: (t: Translation) => string | undefined) => {
-    const translation = getter(idTranslations[lang]);
-    if (translation) return translation;
+    if (!(lang in idTranslations)) throw new Error('Unknown translation: ' + lang);
+
+    try {
+        const translation = getter(idTranslations[lang]);
+        if (translation) return translation;
+    } catch {}
+
     return getter(idTranslationsEn.en.presets);
 };
 
