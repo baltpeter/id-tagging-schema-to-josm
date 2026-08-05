@@ -304,7 +304,6 @@ for (const [id, p] of Object.entries(idPresets)) {
         }
 
         // TODO: p.relation
-        // TODO: these feel impossible: p.removeTags
     }
 }
 
