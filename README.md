@@ -6,7 +6,7 @@ This repository allows you to use the [presets](https://github.com/openstreetmap
 
 <!-- Apparently, that's the best we can do (https://github.com/george-hawkins/video-in-github-markdown/tree/17fc74a00ecb070d6cbe15a2e3c95aab0d2aba6d9)… -->
 
-https://github.com/user-attachments/assets/6a4a0a88-58f5-4e25-8388-40608cf06158
+https://github.com/user-attachments/assets/238f4a8d-1b9a-4d35-a40f-200357b2b3e8
 
 <details>
 <summary>Alt text for the video</summary>
