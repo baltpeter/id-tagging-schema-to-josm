@@ -1,5 +1,7 @@
 {
     "name": "id-tagging-schema-to-josm",
+    "private": true,
+    "version": "0.1.0+its-7-0-1",
     "type": "module",
     "scripts": {
         "build": "node src/build.ts",
