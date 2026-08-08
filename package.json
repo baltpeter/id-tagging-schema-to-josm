@@ -1,7 +1,7 @@
 {
     "name": "id-tagging-schema-to-josm",
     "private": true,
-    "version": "0.1.0+its-7-0-1",
+    "version": "0.1.0+its-7-1-0",
     "type": "module",
     "scripts": {
         "build": "node src/build.ts",
@@ -12,7 +12,7 @@
         "@fortawesome/fontawesome-free": "^7.3.1",
         "@mapbox/maki": "^8.2.0",
         "@openstreetmap/id": "^2.41.2",
-        "@openstreetmap/id-tagging-schema": "^7.0.1",
+        "@openstreetmap/id-tagging-schema": "^7.1.0",
         "@rapideditor/country-coder": "^5.6.1",
         "@rapideditor/temaki": "^5.13.0",
         "@svgdotjs/svg.js": "^3.2.5",
