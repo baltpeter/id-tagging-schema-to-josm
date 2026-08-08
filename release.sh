@@ -30,9 +30,13 @@ if [[ $release_check_status != 1 ]]; then
     exit 1
 fi
 
-echo "Building …"
-rm -rf out icons
+rm -rf out icons data/taginfo.db
+echo "Updating Taginfo database …"
+wget -O /tmp/taginfo-master.db.bz2 https://taginfo.openstreetmap.org/download/taginfo-master.db.bz2
+bzcat /tmp/taginfo-master.db.bz2 > data/taginfo.db
+echo "Compiling icons …"
 yarn compile-icons
+echo "Building presets …"
 yarn build
 
 echo "Releasing…"
