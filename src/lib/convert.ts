@@ -21,7 +21,7 @@ export const convertPreset = async (lang: string) => {
     const itsLicense =
         '\nThese presets are based on id-tagging-schema, which has the following license terms:\n\n' +
         (await readFile(
-            join(import.meta.dirname, '../node_modules/@openstreetmap/id-tagging-schema/LICENSE.md'),
+            join(import.meta.dirname, '../../node_modules/@openstreetmap/id-tagging-schema/LICENSE.md'),
             'utf-8',
         ));
 
@@ -341,13 +341,13 @@ export const convertPreset = async (lang: string) => {
         }
     }
 
-    const outDir = join(import.meta.dirname, '../out');
+    const outDir = join(import.meta.dirname, '../../out');
     await mkdir(outDir, { recursive: true });
 
     const xml = doc.end({ prettyPrint: true });
     if (lang === 'en') await writeFile(join(outDir, `id-presets.xml`), xml);
 
-    const iconsDir = join(import.meta.dirname, '../icons');
+    const iconsDir = join(import.meta.dirname, '../../icons');
     const fullLicense = itsLicense + '\n\n' + (await readFile(join(iconsDir, 'LICENSE'), 'utf-8'));
     for (const style of ['light', 'dark']) {
         const zip = new JSZip();
