@@ -15,14 +15,14 @@ if [[ $git_has_been_pushed_status != 0 ]]; then
     exit 1
 fi
 
-version=$(jq -r '.version' package.json)
+version=v$(jq -r '.version' package.json)
 
 if ! read -q "choice?Do you want to release $version?"; then
     exit 1
 fi
 echo
 
-gh release view $version > /dev/null 2>&1
+gh release view "$version" > /dev/null 2>&1
 release_check_status=$?
 
 if [[ $release_check_status != 1 ]]; then
@@ -40,4 +40,4 @@ echo "Building presets …"
 yarn build
 
 echo "Releasing…"
-gh release create v$version --fail-on-no-commits --generate-notes ./out/*.xml ./out/*.zip
+gh release create "$version" --fail-on-no-commits --generate-notes ./out/*.xml ./out/*.zip
