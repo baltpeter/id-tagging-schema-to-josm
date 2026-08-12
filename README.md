@@ -56,6 +56,8 @@ You can also use the presets in the following languages:
 
 <!-- This section is generated automatically. Don't edit manually, your changes will be overwritten. -->
 <!-- § DOWNLOAD LINKS START § -->
+- Arabic (`ar`): [light mode](https://github.com/baltpeter/id-tagging-schema-to-josm/releases/latest/download/id-presets-ar-light.zip), [dark mode](https://github.com/baltpeter/id-tagging-schema-to-josm/releases/latest/download/id-presets-ar-dark.zip)
+- Arabic (AA) (`ar-AA`): [light mode](https://github.com/baltpeter/id-tagging-schema-to-josm/releases/latest/download/id-presets-ar-AA-light.zip), [dark mode](https://github.com/baltpeter/id-tagging-schema-to-josm/releases/latest/download/id-presets-ar-AA-dark.zip)
 - Brazilian Portuguese (`pt-BR`): [light mode](https://github.com/baltpeter/id-tagging-schema-to-josm/releases/latest/download/id-presets-pt-BR-light.zip), [dark mode](https://github.com/baltpeter/id-tagging-schema-to-josm/releases/latest/download/id-presets-pt-BR-dark.zip)
 - Breton (`br`): [light mode](https://github.com/baltpeter/id-tagging-schema-to-josm/releases/latest/download/id-presets-br-light.zip), [dark mode](https://github.com/baltpeter/id-tagging-schema-to-josm/releases/latest/download/id-presets-br-dark.zip)
 - Cantonese (`yue`): [light mode](https://github.com/baltpeter/id-tagging-schema-to-josm/releases/latest/download/id-presets-yue-light.zip), [dark mode](https://github.com/baltpeter/id-tagging-schema-to-josm/releases/latest/download/id-presets-yue-dark.zip)
