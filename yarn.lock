@@ -93,15 +93,15 @@
   resolved "https://registry.yarnpkg.com/@oozcitak/util/-/util-10.0.0.tgz#f6b40472d96c210094a556ee5ccb8e77f1bd30af"
   integrity sha512-hAX0pT/73190NLqBPPWSdBVGtbY6VOhWYK3qqHqtXQ1gK7kS2yz4+ivsN07hpJ6I3aeMtKP6J6npsEKOAzuTLA==
 
-"@openstreetmap/id-tagging-schema@^7.1.1":
-  version "7.1.1"
-  resolved "https://registry.yarnpkg.com/@openstreetmap/id-tagging-schema/-/id-tagging-schema-7.1.1.tgz#d068c15e4c9034a1e9bee12c426a713fe65c7442"
-  integrity sha512-SGIXbfh5vvI9+JaJ9S7+Lkf8i4CiYn6CBsvV+/oXhfQjr0+WFZZ7E3SOIYbH+KMx/cqGNA8NCF7GSkmt9Afpcw==
+"@openstreetmap/id-tagging-schema@^7.2.0":
+  version "7.2.0"
+  resolved "https://registry.yarnpkg.com/@openstreetmap/id-tagging-schema/-/id-tagging-schema-7.2.0.tgz#b315c8bac1a956726114291e1ac04047d8e866e6"
+  integrity sha512-7hjV8Xl3CoaO0u+M/Po0u33YIRahL8jEJtOzho189VOqqQQB3L9UGv2o93o/T4G3I0z5sFvQhn0apOz6+j253w==
 
-"@openstreetmap/id@^2.42.0":
-  version "2.42.0"
-  resolved "https://registry.yarnpkg.com/@openstreetmap/id/-/id-2.42.0.tgz#13f70b8e92284a6b76d1715a137b2517eeff3fe2"
-  integrity sha512-IzhCTYLH3/rlbbryAsT3GNYjU0lAVAbKspVQLOnZzKEo+S8b8cLJBqVa4heDrL+v06gLYyiA5uxe2YSIjd9ehw==
+"@openstreetmap/id@^2.42.2":
+  version "2.42.2"
+  resolved "https://registry.yarnpkg.com/@openstreetmap/id/-/id-2.42.2.tgz#d2a41901225b0dec1221f1f22858dd214c9c40ef"
+  integrity sha512-0fI0hNMd9cDHuWUczWRB4R19t230BRiMOAFI8Clo6m+sZHaAke6i0fu+TlhEzzhjYb2xu2Q07AczlyBCGXnFLg==
   dependencies:
     "@mapbox/geojson-area" "^0.2.2"
     "@mapbox/sexagesimal" "1.2.0"
