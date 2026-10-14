@@ -93,10 +93,10 @@
   resolved "https://registry.yarnpkg.com/@oozcitak/util/-/util-10.0.0.tgz#f6b40472d96c210094a556ee5ccb8e77f1bd30af"
   integrity sha512-hAX0pT/73190NLqBPPWSdBVGtbY6VOhWYK3qqHqtXQ1gK7kS2yz4+ivsN07hpJ6I3aeMtKP6J6npsEKOAzuTLA==
 
-"@openstreetmap/id-tagging-schema@^7.2.0":
-  version "7.2.0"
-  resolved "https://registry.yarnpkg.com/@openstreetmap/id-tagging-schema/-/id-tagging-schema-7.2.0.tgz#b315c8bac1a956726114291e1ac04047d8e866e6"
-  integrity sha512-7hjV8Xl3CoaO0u+M/Po0u33YIRahL8jEJtOzho189VOqqQQB3L9UGv2o93o/T4G3I0z5sFvQhn0apOz6+j253w==
+"@openstreetmap/id-tagging-schema@^7.3.0":
+  version "7.3.0"
+  resolved "https://registry.yarnpkg.com/@openstreetmap/id-tagging-schema/-/id-tagging-schema-7.3.0.tgz#311b5aca31a7a85324490084dc80ebe8e44b2ab5"
+  integrity sha512-z2nQgHLNwCjebDxlKBaERjg02UmcJyemAtsXExJFlXNNc4K9l7EdtfkGs064Y0IgzUltmUxM/FeUBRyhb4kv6w==
 
 "@openstreetmap/id@^2.42.2":
   version "2.42.2"
